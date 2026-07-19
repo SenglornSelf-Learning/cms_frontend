@@ -19,7 +19,7 @@ function toHttpError(error: unknown): Error {
 }
 
 /**
- * Axios client for Spring Boot REST API under context-path `/admin`.
+ * Axios client for Spring Boot REST API (`/api/**`).
  * Pattern aligned with coreit.planfit `services/http-client.ts`.
  */
 export function createHttpClient(): AxiosInstance {

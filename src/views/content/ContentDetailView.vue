@@ -1,42 +1,3 @@
-<script setup lang="ts">
-import { ref, toRef, watch } from 'vue'
-import ContentPanel from '@/components/common/ContentPanel.vue'
-import { contentService } from '@/services'
-import type { CmsContent } from '@/types/content'
-
-const props = defineProps<{
-  id: string
-}>()
-
-const idRef = toRef(props, 'id')
-const content = ref<CmsContent | null>(null)
-const error = ref<string | null>(null)
-const loading = ref(true)
-
-async function load() {
-  loading.value = true
-  error.value = null
-  content.value = null
-  const numericId = Number(idRef.value)
-  if (!Number.isFinite(numericId)) {
-    error.value = 'Invalid id'
-    loading.value = false
-    return
-  }
-  try {
-    content.value = await contentService.findById(numericId)
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Not found'
-  } finally {
-    loading.value = false
-  }
-}
-
-watch(idRef, () => {
-  void load()
-}, { immediate: true })
-</script>
-
 <template>
   <ContentPanel title="Content detail" col-class="col-lg-8">
     <p v-if="loading" class="text-muted">Loading...</p>
@@ -58,9 +19,55 @@ watch(idRef, () => {
       <dd class="col-sm-9">{{ content.description }}</dd>
       <dt class="col-sm-3">Content</dt>
       <dd class="col-sm-9">
-        <pre class="mb-0">{{ content.editor }}</pre>
+        <pre class="mb-0 content-editor">{{ content.editor }}</pre>
       </dd>
     </dl>
     <RouterLink to="/contents" class="btn btn-light mt-3">Back to list</RouterLink>
   </ContentPanel>
 </template>
+
+<script setup lang="ts">
+import { ref, toRef, watch } from 'vue'
+import ContentPanel from '@/components/common/ContentPanel.vue'
+import { getContentService } from '@/services'
+import type { CmsContent } from '@/types/content'
+
+const props = defineProps<{
+  id: string
+}>()
+
+const idRef = toRef(props, 'id')
+const content = ref<CmsContent | null>(null)
+const error = ref<string | null>(null)
+const loading = ref(true)
+
+async function fetchContentDetail() {
+  loading.value = true
+  error.value = null
+  content.value = null
+  const numericId = Number(idRef.value)
+  if (!Number.isFinite(numericId)) {
+    error.value = 'Invalid id'
+    loading.value = false
+    return
+  }
+  try {
+    content.value = await getContentService().getContentById(numericId)
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'Not found'
+  } finally {
+    loading.value = false
+  }
+}
+
+watch(idRef, () => {
+  void fetchContentDetail()
+}, { immediate: true })
+</script>
+
+<style scoped>
+.content-editor {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+</style>

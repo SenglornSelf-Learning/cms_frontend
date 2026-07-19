@@ -1,9 +1,9 @@
 /**
  * Central configuration (mirrors coreit.planfit `src/config`).
- * Vite dev server proxies `/admin` → Spring Boot; production can set VITE_API_BASE.
+ * Vite dev server proxies `/api` → Spring Boot; production can set VITE_API_BASE.
  */
 export interface CmsRuntimeConfig {
-  /** Spring context path + origin prefix, e.g. `/admin` or `https://host/admin` */
+  /** API origin prefix, e.g. `` (same origin) or `https://host:8080` */
   apiBaseUrl: string
   requestTimeoutMs: number
 }
@@ -11,7 +11,7 @@ export interface CmsRuntimeConfig {
 const DEFAULT_TIMEOUT_MS = 30_000
 
 export function getCmsApiBaseUrl(): string {
-  return import.meta.env.VITE_API_BASE ?? '/admin'
+  return import.meta.env.VITE_API_BASE ?? ''
 }
 
 export function getCmsRuntimeConfig(): CmsRuntimeConfig {

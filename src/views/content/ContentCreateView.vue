@@ -1,69 +1,3 @@
-<script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import ContentPanel from '@/components/common/ContentPanel.vue'
-import { categoryService, contentService } from '@/services'
-import type { Category } from '@/types/category'
-import type { CreateContentPayload } from '@/types/content'
-
-const router = useRouter()
-const categories = ref<Category[]>([])
-const title = ref('')
-const slug = ref('')
-const keyword = ref('')
-const description = ref('')
-const thumbnail = ref('')
-const editor = ref('')
-const categoryId = ref<number | null>(null)
-const loadingCategories = ref(true)
-const saving = ref(false)
-const error = ref<string | null>(null)
-
-onMounted(async () => {
-  try {
-    categories.value = await categoryService.findAll()
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to load categories'
-  } finally {
-    loadingCategories.value = false
-  }
-})
-
-function optionalText(value: string): string | undefined {
-  const trimmed = value.trim()
-  return trimmed || undefined
-}
-
-async function submit() {
-  error.value = null
-  const trimmedTitle = title.value.trim()
-  if (!trimmedTitle) {
-    error.value = 'Title is required'
-    return
-  }
-
-  const payload: CreateContentPayload = {
-    title: trimmedTitle,
-    slug: optionalText(slug.value),
-    keyword: optionalText(keyword.value),
-    description: optionalText(description.value),
-    thumbnail: optionalText(thumbnail.value),
-    editor: optionalText(editor.value),
-    categoryId: categoryId.value,
-  }
-
-  saving.value = true
-  try {
-    await contentService.create(payload)
-    await router.push('/contents')
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Save failed'
-  } finally {
-    saving.value = false
-  }
-}
-</script>
-
 <template>
   <ContentPanel title="Create content" col-class="col-lg-8">
     <p v-if="error" class="text-danger">{{ error }}</p>
@@ -116,3 +50,72 @@ async function submit() {
     </form>
   </ContentPanel>
 </template>
+
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import ContentPanel from '@/components/common/ContentPanel.vue'
+import { getCategoryService, getContentService, type CategoryListItem } from '@/services'
+import type { CreateContentPayload } from '@/types/content'
+
+const router = useRouter()
+const categories = ref<CategoryListItem[]>([])
+const title = ref('')
+const slug = ref('')
+const keyword = ref('')
+const description = ref('')
+const thumbnail = ref('')
+const editor = ref('')
+const categoryId = ref<number | null>(null)
+const loadingCategories = ref(true)
+const saving = ref(false)
+const error = ref<string | null>(null)
+
+onMounted(async () => {
+  try {
+    const { categories: rows } = await getCategoryService().getCategories()
+    categories.value = rows
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'Failed to load categories'
+  } finally {
+    loadingCategories.value = false
+  }
+})
+
+function optionalText(value: string): string | undefined {
+  const trimmed = value.trim()
+  return trimmed || undefined
+}
+
+async function submit() {
+  error.value = null
+  const trimmedTitle = title.value.trim()
+  if (!trimmedTitle) {
+    error.value = 'Title is required'
+    return
+  }
+
+  const payload: CreateContentPayload = {
+    title: trimmedTitle,
+    slug: optionalText(slug.value),
+    keyword: optionalText(keyword.value),
+    description: optionalText(description.value),
+    thumbnail: optionalText(thumbnail.value),
+    editor: optionalText(editor.value),
+    categoryId: categoryId.value,
+  }
+
+  saving.value = true
+  try {
+    await getContentService().createContent(payload)
+    await router.push('/contents')
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'Save failed'
+  } finally {
+    saving.value = false
+  }
+}
+</script>
+
+<style scoped>
+</style>
