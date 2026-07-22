@@ -1,6 +1,29 @@
 import type { Category } from '@/types/category'
 import { getHttpClient } from './http-client'
 
+/** API envelope matching backend ResponseBody<T>. */
+interface ResponseBody<T> {
+  status: boolean
+  statusCode: number
+  message: string
+  data: T
+}
+
+/** Paginated list matching backend PageResponse<T>. */
+interface PageResponse<T> {
+  items: T[]
+  totalCount: number
+  pageIndex: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface CategoryListParams {
+  pageIndex?: number
+  pageSize?: number
+  orderBy?: string
+}
+
 /** Category list row (mapped from API wire shape). */
 export interface CategoryListItem {
   id: number
@@ -10,29 +33,41 @@ export interface CategoryListItem {
   isDeleted: boolean
 }
 
+function isDeletedYn(deletedYn: string | null | undefined): boolean {
+  return deletedYn === 'Y'
+}
+
 /** Display helper: null/empty → "-" */
 function toDisplay(value: string | number | null | undefined): string {
   const s = value == null ? '' : String(value).trim()
   return s === '' ? '-' : s
 }
 
-function formatStatusLabel(isDeleted: boolean | null | undefined): string {
-  return isDeleted ? 'Deleted' : 'Active'
+function formatStatusLabel(deleted: boolean): string {
+  return deleted ? 'Deleted' : 'Active'
 }
 
-function rawToListItem(raw: Category, index: number, totalCount: number): CategoryListItem {
+function rawToListItem(
+  raw: Category,
+  index: number,
+  totalCount: number,
+  pageIndex: number,
+  pageSize: number,
+): CategoryListItem {
+  const deleted = isDeletedYn(raw.deletedYn)
+  const rowSet = (pageIndex - 1) * pageSize + index
   return {
     id: raw.id ?? 0,
-    no: Math.max(1, totalCount - index),
+    no: Math.max(1, totalCount - rowSet),
     name: toDisplay(raw.name),
-    statusLabel: formatStatusLabel(raw.isDeleted),
-    isDeleted: Boolean(raw.isDeleted),
+    statusLabel: formatStatusLabel(deleted),
+    isDeleted: deleted,
   }
 }
 
 const CATEGORIES_LIST = '/api/categories/list'
 const CATEGORY_DETAIL = (id: number) => `/api/categories/getById/${id}`
-const CATEGORIES_CREATE = '/api/categories/create'
+const CATEGORIES_CREATE = '/api/categories'
 
 /**
  * Category API — replaces direct `fetch` / old `api/categories` module.
@@ -42,25 +77,44 @@ export class CategoryService {
     return getHttpClient()
   }
 
-  async getCategories(): Promise<{
+  async getCategories(params: CategoryListParams = {}): Promise<{
     categories: CategoryListItem[]
     totalCount: number
+    pageIndex: number
+    pageSize: number
+    totalPages: number
   }> {
-    const { data } = await this.client.get<Category[]>(CATEGORIES_LIST)
-    const rows = data ?? []
-    const totalCount = rows.length
-    const categories = rows.map((raw, index) => rawToListItem(raw, index, totalCount))
-    return { categories, totalCount }
+    const pageIndex = params.pageIndex ?? 1
+    const pageSize = params.pageSize ?? 10
+    const orderBy = params.orderBy ?? 'createdAt,DESC'
+
+    const { data } = await this.client.get<ResponseBody<PageResponse<Category>>>(
+      CATEGORIES_LIST,
+      { params: { pageIndex, pageSize, orderBy } },
+    )
+    const page = data?.data
+    const rows = page?.items ?? []
+    const totalCount = page?.totalCount ?? rows.length
+    const categories = rows.map((raw, index) =>
+      rawToListItem(raw, index, totalCount, pageIndex, pageSize),
+    )
+    return {
+      categories,
+      totalCount,
+      pageIndex: page?.pageIndex ?? pageIndex,
+      pageSize: page?.pageSize ?? pageSize,
+      totalPages: page?.totalPages ?? 0,
+    }
   }
 
   async getCategoryById(id: number): Promise<Category> {
-    const { data } = await this.client.get<Category>(CATEGORY_DETAIL(id))
-    return data
+    const { data } = await this.client.get<ResponseBody<Category>>(CATEGORY_DETAIL(id))
+    return data.data
   }
 
   async createCategory(payload: Pick<Category, 'name'>): Promise<Category> {
-    const { data } = await this.client.post<Category>(CATEGORIES_CREATE, payload)
-    return data
+    const { data } = await this.client.post<ResponseBody<Category>>(CATEGORIES_CREATE, payload)
+    return data.data
   }
 }
 

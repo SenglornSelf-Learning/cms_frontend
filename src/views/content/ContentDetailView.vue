@@ -14,7 +14,7 @@
       <dt class="col-sm-3">Category</dt>
       <dd class="col-sm-9">{{ content.categoryId ?? 'None' }}</dd>
       <dt class="col-sm-3">Deleted</dt>
-      <dd class="col-sm-9">{{ content.isDeleted ? 'Yes' : 'No' }}</dd>
+      <dd class="col-sm-9">{{ content.deletedYn === 'Y' ? 'Yes' : 'No' }}</dd>
       <dt class="col-sm-3">Description</dt>
       <dd class="col-sm-9">{{ content.description }}</dd>
       <dt class="col-sm-3">Content</dt>

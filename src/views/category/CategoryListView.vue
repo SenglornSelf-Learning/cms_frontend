@@ -45,7 +45,6 @@ import { onMounted, ref } from 'vue'
 import ContentPanel from '@/components/common/ContentPanel.vue'
 import { getCategoryService, type CategoryListItem } from '@/services'
 
-const categoryService = getCategoryService()
 const categories = ref<CategoryListItem[]>([])
 const error = ref<string | null>(null)
 const isLoading = ref(false)
@@ -54,7 +53,7 @@ async function fetchCategories() {
   isLoading.value = true
   error.value = null
   try {
-    const { categories: rows } = await categoryService.getCategories()
+    const { categories: rows } = await getCategoryService().getCategories()
     categories.value = rows
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Failed to load categories'

@@ -8,7 +8,7 @@
       <dt class="col-sm-3">Name</dt>
       <dd class="col-sm-9">{{ category.name }}</dd>
       <dt class="col-sm-3">Deleted</dt>
-      <dd class="col-sm-9">{{ category.isDeleted ? 'Yes' : 'No' }}</dd>
+      <dd class="col-sm-9">{{ category.deletedYn === 'Y' ? 'Yes' : 'No' }}</dd>
     </dl>
     <RouterLink to="/categories" class="btn btn-light mt-3">Back to list</RouterLink>
   </ContentPanel>

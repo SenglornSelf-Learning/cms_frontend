@@ -7,8 +7,8 @@ export interface CmsContent {
   description?: string
   thumbnail?: string
   editor?: string
-  isDeleted?: boolean | null
-  createAt?: string
+  deletedYn?: string | null
+  createdAt?: string
   categoryId?: number | null
 }
 

@@ -1,6 +1,6 @@
 /**
  * Central configuration (mirrors coreit.planfit `src/config`).
- * Vite dev server proxies `/api` → Spring Boot; production can set VITE_API_BASE.
+ * Set VITE_API_BASE to the Spring Boot origin (e.g. `http://localhost:8080`).
  */
 export interface CmsRuntimeConfig {
   /** API origin prefix, e.g. `` (same origin) or `https://host:8080` */

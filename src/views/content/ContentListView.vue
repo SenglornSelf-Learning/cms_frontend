@@ -47,7 +47,6 @@ import { onMounted, ref } from 'vue'
 import ContentPanel from '@/components/common/ContentPanel.vue'
 import { getContentService, type ContentListItem } from '@/services'
 
-const contentService = getContentService()
 const contents = ref<ContentListItem[]>([])
 const error = ref<string | null>(null)
 const isLoading = ref(false)
@@ -56,7 +55,7 @@ async function fetchContents() {
   isLoading.value = true
   error.value = null
   try {
-    const { contents: rows } = await contentService.getContents()
+    const { contents: rows } = await getContentService().getContents()
     contents.value = rows
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Failed to load contents'
