@@ -1,5 +1,5 @@
 <template>
-  <ContentPanel title="Category detail" col-class="col-lg-8">
+  <MasterContentLayout title="Category detail" col-class="col-lg-8">
     <p v-if="loading" class="text-muted">Loading…</p>
     <p v-else-if="error" class="text-danger">{{ error }}</p>
     <dl v-else-if="category" class="row mb-0">
@@ -11,12 +11,12 @@
       <dd class="col-sm-9">{{ category.deletedYn === 'Y' ? 'Yes' : 'No' }}</dd>
     </dl>
     <RouterLink to="/categories" class="btn btn-light mt-3">Back to list</RouterLink>
-  </ContentPanel>
+  </MasterContentLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, toRef, watch } from 'vue'
-import ContentPanel from '@/components/common/ContentPanel.vue'
+import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
 import { getCategoryService } from '@/services'
 import type { Category } from '@/types/category'
 

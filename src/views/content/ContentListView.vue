@@ -1,5 +1,5 @@
 <template>
-  <ContentPanel title="Content Management">
+  <MasterContentLayout title="Content Management">
     <template #actions>
       <RouterLink class="btn btn-primary" to="/contents/new">Create New Content</RouterLink>
     </template>
@@ -39,12 +39,12 @@
         </tr>
       </tbody>
     </table>
-  </ContentPanel>
+  </MasterContentLayout>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import ContentPanel from '@/components/common/ContentPanel.vue'
+import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
 import { getContentService, type ContentListItem } from '@/services'
 
 const contents = ref<ContentListItem[]>([])

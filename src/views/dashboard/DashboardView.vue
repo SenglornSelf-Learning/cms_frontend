@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import ContentPanel from '@/components/common/ContentPanel.vue'
+import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
 import { dashboardService } from '@/services'
 import type { DashboardSummary } from '@/types/dashboard'
 
@@ -17,12 +17,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ContentPanel title="Dashboard">
+  <MasterContentLayout title="Dashboard">
     <p v-if="error" class="text-danger">{{ error }}</p>
     <template v-else-if="data">
       <p class="lead mb-1">{{ data.title }}</p>
       <p class="text-muted mb-0">{{ data.description }}</p>
     </template>
     <p v-else class="text-muted mb-0">Loading…</p>
-  </ContentPanel>
+  </MasterContentLayout>
 </template>

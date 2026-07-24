@@ -1,18 +1,3 @@
-<script setup lang="ts">
-/**
- * Page shell matching Thymeleaf `adminLayout` + `card` blocks:
- * row → col → card → card-body.
- */
-withDefaults(
-  defineProps<{
-    title?: string
-    /** Bootstrap column class, e.g. col-lg-8 */
-    colClass?: string
-  }>(),
-  { colClass: 'col-12' },
-)
-</script>
-
 <template>
   <div class="row">
     <div :class="colClass">
@@ -33,3 +18,14 @@ withDefaults(
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+withDefaults(
+  defineProps<{
+    title?: string
+    /** Bootstrap column class, e.g. col-lg-8 */
+    colClass?: string
+  }>(),
+  { colClass: 'col-12' },
+)
+</script>

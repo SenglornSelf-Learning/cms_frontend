@@ -1,5 +1,5 @@
 <template>
-  <ContentPanel title="Content detail" col-class="col-lg-8">
+  <MasterContentLayout title="Content detail" col-class="col-lg-8">
     <p v-if="loading" class="text-muted">Loading...</p>
     <p v-else-if="error" class="text-danger">{{ error }}</p>
     <dl v-else-if="content" class="row mb-0">
@@ -23,12 +23,12 @@
       </dd>
     </dl>
     <RouterLink to="/contents" class="btn btn-light mt-3">Back to list</RouterLink>
-  </ContentPanel>
+  </MasterContentLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, toRef, watch } from 'vue'
-import ContentPanel from '@/components/common/ContentPanel.vue'
+import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
 import { getContentService } from '@/services'
 import type { CmsContent } from '@/types/content'
 

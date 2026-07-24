@@ -1,5 +1,5 @@
 <template>
-  <ContentPanel title="Create category" col-class="col-lg-8">
+  <MasterContentLayout title="Create category" col-class="col-lg-8">
     <p v-if="error" class="text-danger">{{ error }}</p>
     <form @submit.prevent="submit">
       <div class="form-group">
@@ -11,13 +11,13 @@
       </button>
       <RouterLink to="/categories" class="btn btn-light ml-2">Cancel</RouterLink>
     </form>
-  </ContentPanel>
+  </MasterContentLayout>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import ContentPanel from '@/components/common/ContentPanel.vue'
+import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
 import { getCategoryService } from '@/services'
 
 const router = useRouter()
