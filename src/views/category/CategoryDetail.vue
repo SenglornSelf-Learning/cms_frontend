@@ -7,8 +7,8 @@
       <dd class="col-sm-9">{{ category.id }}</dd>
       <dt class="col-sm-3">Name</dt>
       <dd class="col-sm-9">{{ category.name }}</dd>
-      <dt class="col-sm-3">Deleted</dt>
-      <dd class="col-sm-9">{{ category.deletedYn === 'Y' ? 'Yes' : 'No' }}</dd>
+      <dt class="col-sm-3">Status</dt>
+      <dd class="col-sm-9">{{ category.status === 'Y' ? 'Inactive' : 'Active' }}</dd>
     </dl>
     <RouterLink to="/categories" class="btn btn-light mt-3">Back to list</RouterLink>
   </MasterContentLayout>

@@ -28,7 +28,7 @@
           <button
             type="button"
             class="btn-square btn-sm"
-            :class="row.statusLabel === 'Deleted' ? 'btn-danger' : 'btn-success'"
+            :class="row.statusLabel === 'Inactive' ? 'btn-secondary' : 'btn-success'"
           >
             {{ row.statusLabel }}
           </button>
@@ -89,7 +89,7 @@ function mapCategoryToRow(item: CategoryListItem): TableRow {
     no: item.no,
     name: item.name,
     statusLabel: item.statusLabel,
-    status: item.statusLabel,
+    status: item.status,
     action: '',
   }
 }

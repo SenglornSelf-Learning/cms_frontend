@@ -24,11 +24,18 @@ export interface CategoryListParams {
   orderBy?: string
 }
 
+/** Payload for POST /api/categories (matches CategoryRequest). Active = N, Inactive = Y */
+export interface CreateCategoryPayload {
+  name: string
+  status: 'N' | 'Y'
+}
+
 /** Category list row (mapped from API wire shape). */
 export interface CategoryListItem {
   id: number
   no: number
   name: string
+  status: string
   statusLabel: string
   isDeleted: boolean
 }
@@ -43,8 +50,9 @@ function toDisplay(value: string | number | null | undefined): string {
   return s === '' ? '-' : s
 }
 
-function formatStatusLabel(deleted: boolean): string {
-  return deleted ? 'Deleted' : 'Active'
+/** Active = N, Inactive = Y */
+function formatStatusLabel(status: string | null | undefined): string {
+  return status === 'Y' ? 'Inactive' : 'Active'
 }
 
 function rawToListItem(
@@ -55,12 +63,14 @@ function rawToListItem(
   pageSize: number,
 ): CategoryListItem {
   const deleted = isDeletedYn(raw.deletedYn)
+  const status = raw.status === 'Y' ? 'Y' : 'N'
   const rowSet = (pageIndex - 1) * pageSize + index
   return {
     id: raw.id ?? 0,
     no: Math.max(1, totalCount - rowSet),
     name: toDisplay(raw.name),
-    statusLabel: formatStatusLabel(deleted),
+    status,
+    statusLabel: formatStatusLabel(status),
     isDeleted: deleted,
   }
 }
@@ -112,7 +122,7 @@ export class CategoryService {
     return data.data
   }
 
-  async createCategory(payload: Pick<Category, 'name'>): Promise<Category> {
+  async createCategory(payload: CreateCategoryPayload): Promise<Category> {
     const { data } = await this.client.post<ResponseBody<Category>>(CATEGORIES_CREATE, payload)
     return data.data
   }

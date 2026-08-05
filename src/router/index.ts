@@ -16,17 +16,17 @@ const router = createRouter({
         {
           path: 'categories',
           name: 'categories',
-          component: () => import('@/views/category/CategoryListView.vue'),
+          component: () => import('@/views/category/CategoryList.vue'),
         },
         {
           path: 'categories/new',
           name: 'category-new',
-          component: () => import('@/views/category/CategoryCreateView.vue'),
+          component: () => import('@/views/category/CategoryForm.vue'),
         },
         {
           path: 'categories/:id',
           name: 'category-detail',
-          component: () => import('@/views/category/CategoryDetailView.vue'),
+          component: () => import('@/views/category/CategoryDetail.vue'),
           props: true,
         },
         {
