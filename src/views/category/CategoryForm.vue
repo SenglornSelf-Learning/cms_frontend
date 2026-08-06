@@ -32,21 +32,24 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary" :disabled="submitting">
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary" :disabled="submitting">
         {{ submitting ? 'Saving…' : 'Save' }}
       </button>
-      <RouterLink to="/categories" class="btn btn-light ml-2">Cancel</RouterLink>
+      <RouterLink to="/categories" class="btn btn-secondary ml-2">Cancel</RouterLink>
+      </div>
     </form>
   </MasterContentLayout>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted} from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
 import { getCategoryService, type CreateCategoryPayload } from '@/services'
 
 const router = useRouter()
+const route = useRoute()
 const submitting = ref(false)
 const error = ref<string | null>(null)
 
@@ -91,6 +94,28 @@ function buildCategoryPayload(): CreateCategoryPayload {
   }
 }
 
+const isCategoryEditRoute = computed(() => route.name === 'categoryEdit')
+const isEdit = computed(() => isCategoryEditRoute.value)
+const categoryEditId = computed(() => {
+  if (!isCategoryEditRoute.value) return undefined
+  return route.params.id
+})
+
+
+async function fetchCategoryDetail() {
+  if (!isEdit.value) return
+  const id = Number(categoryEditId.value)
+  try {
+    const category = await getCategoryService().getCategoryById(id)
+    form.value = {
+      name: category.name,
+      status: category.status as CategoryStatus,
+    }
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'Failed to fetch category detail'
+  }
+}
+
 async function onSubmit() {
   error.value = null
   if (!validateForm()) return
@@ -98,7 +123,12 @@ async function onSubmit() {
   const payload = buildCategoryPayload()
   submitting.value = true
   try {
-    await getCategoryService().createCategory(payload)
+    if (isEdit.value) {
+      const id = Number(categoryEditId.value)
+      await getCategoryService().updateCategoryById(id, payload)
+    } else {
+      await getCategoryService().createCategory(payload)
+    }
     resetForm()
     await router.push('/categories')
   } catch (e) {
@@ -107,4 +137,8 @@ async function onSubmit() {
     submitting.value = false
   }
 }
+
+onMounted(() => {
+  void fetchCategoryDetail()
+})
 </script>

@@ -1,19 +1,18 @@
 <template>
-  <MasterContentLayout title="Category Management">
+  <MasterContentLayout title="Category Management" actionTo="/categories/create" actionLabel="Create New Category">
     <TableTop
-      :show-search-category="false"
-      :show-keyword-search="false"
-      :show-search-button="false"
-      :show-reset-button="false"
-      :show-page="true"
-      :page-size="itemsPerPage"
-      @update:page-size="onPageSizeChange"
+      :showKeywordSearch="true"
+      search-placeholder="Search category name…"
+      v-model:keywordTextValue="searchKeyword"
+      
+      :showSearchButton="true"
+      :showResetButton="true"
+      :showPage="true"
+      :pageSize="itemsPerPage"
+      @updatePageSize="onPageSizeChange"
+      @searchFilter="handleSearch"
+      @resetFilter="handleReset"
     >
-      <template #right>
-        <RouterLink class="btn btn-primary btn-sm" to="/categories/new">
-          Create New Category
-        </RouterLink>
-      </template>
     </TableTop>
 
     <div class="table-results-area" :class="{ 'is-loading': isLoading }">
@@ -22,26 +21,16 @@
       <NewTable
         :columns="columns"
         :data="tableData"
-        empty-text="No categories"
+        empty-text="No category found"
       >
         <template #status="{ row }">
           <button
             type="button"
             class="btn-square btn-sm"
-            :class="row.statusLabel === 'Inactive' ? 'btn-secondary' : 'btn-success'"
+            :class="row.status === 'Inactive' ? 'btn-secondary' : 'btn-success'"
           >
-            {{ row.statusLabel }}
+            {{ row.status }}
           </button>
-        </template>
-        <template #action="{ row }">
-          <RouterLink
-            v-if="row.id"
-            class="text-success mr-2"
-            :to="`/categories/${row.id}`"
-          >
-            View
-          </RouterLink>
-          <span class="text-muted ml-2 btn-square btn-sm btn-danger">Delete</span>
         </template>
       </NewTable>
 
@@ -75,22 +64,42 @@ const totalItems = ref(0)
 const tableData = ref<TableRow[]>([])
 const error = ref<string | null>(null)
 const isLoading = ref(false)
+const searchKeyword = ref('')
 
 const columns = computed<TableColumn[]>(() => [
-  { key: 'no', label: '#', width: '6%' },
+  { key: 'no', label: 'No', width: '6%' },
   { key: 'name', label: 'Name' },
   { key: 'status', label: 'Status', width: '12%' },
-  { key: 'action', label: 'Action', width: '18%' },
 ])
 
-function mapCategoryToRow(item: CategoryListItem): TableRow {
+/** Active = N, Inactive = Y (matches API status). */
+function formatStatusLabel(status: CategoryListItem['status']): string {
+  return status === 'Y' ? 'Inactive' : 'Active'
+}
+
+function handleSearch(keyword: string) {
+  searchKeyword.value = keyword
+  currentPage.value = 1
+  void fetchCategories()
+}
+
+function handleReset() {
+  searchKeyword.value = ''
+  currentPage.value = 1
+  void fetchCategories()
+}
+
+function mapCategoryToRow(item: CategoryListItem, index: number, totalCount: number): TableRow {
+  const rowOffset = itemsPerPage.value * (currentPage.value - 1) + index
   return {
     id: item.id,
-    no: item.no,
-    name: item.name,
-    statusLabel: item.statusLabel,
-    status: item.status,
-    action: '',
+    no: totalCount - rowOffset,
+    name: {
+      type: 'link',
+      value: item.name,
+      to: `/categories/detail/${item.id}`,
+    },
+    status: formatStatusLabel(item.status),
   }
 }
 
@@ -101,8 +110,12 @@ async function fetchCategories() {
     const result = await getCategoryService().getCategories({
       pageIndex: currentPage.value,
       pageSize: itemsPerPage.value,
+      orderBy: 'createdAt,DESC',
+      name: searchKeyword.value.trim() || undefined,
     })
-    tableData.value = result.categories.map(mapCategoryToRow)
+    tableData.value = result.categories.map((item, index) =>
+      mapCategoryToRow(item, index, result.totalCount),
+    )
     totalItems.value = result.totalCount
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Failed to load categories'

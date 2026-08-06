@@ -3,15 +3,22 @@
     <div :class="colClass">
       <div class="card">
         <div class="card-body">
-          <div
-            v-if="title || $slots.actions"
-            class="d-flex justify-content-between align-items-center flex-wrap mb-3"
-          >
-            <h1 v-if="title" class="h4 mb-0">{{ title }}</h1>
-            <div v-if="$slots.actions" class="d-flex align-items-center flex-wrap">
+          <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+            <h1 v-if="title" class="h4 mb-0 text-dark">{{ title }}</h1>
+
+            <div class="d-flex align-items-center flex-wrap">
+              <RouterLink
+                v-if="actionTo"
+                class="btn btn-primary btn-sm"
+                :to="actionTo"
+              >
+                {{ actionLabel }}
+              </RouterLink>
+
               <slot name="actions" />
             </div>
           </div>
+
           <slot />
         </div>
       </div>
@@ -23,9 +30,10 @@
 withDefaults(
   defineProps<{
     title?: string
-    /** Bootstrap column class, e.g. col-lg-8 */
     colClass?: string
+    actionTo?: string
+    actionLabel?: string
   }>(),
-  { colClass: 'col-12' },
+  { colClass: 'col-12', actionTo: '', actionLabel: '' },
 )
 </script>

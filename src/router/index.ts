@@ -19,15 +19,20 @@ const router = createRouter({
           component: () => import('@/views/category/CategoryList.vue'),
         },
         {
-          path: 'categories/new',
-          name: 'category-new',
+          path: 'categories/create',
+          name: 'categoryCreate',
           component: () => import('@/views/category/CategoryForm.vue'),
         },
         {
-          path: 'categories/:id',
-          name: 'category-detail',
+          path: 'categories/detail/:id',
+          name: 'categoryDetail',
           component: () => import('@/views/category/CategoryDetail.vue'),
           props: true,
+        },
+        {
+          path: 'categories/:id/edit',
+          name: 'categoryEdit',
+          component: () => import('@/views/category/CategoryForm.vue'),
         },
         {
           path: 'contents',

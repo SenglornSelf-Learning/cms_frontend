@@ -16,6 +16,7 @@
         </select>
       </div>
 
+      <!-- search category -->
       <div
         v-if="showSearchCategory && searchCategoryOptions.length > 0"
         class="form-group mb-0 mr-2"
@@ -42,6 +43,7 @@
         </select>
       </div>
 
+      <!-- search type -->
       <div v-if="showTypeSelect && typeOptions.length > 0" class="form-group mb-0 mr-2">
         <label v-if="typeSelectLabel" for="tableTopTypeSelect" class="mb-1">
           {{ typeSelectLabel }}
@@ -64,6 +66,7 @@
 
       <slot name="left" />
 
+      <!-- search keyword -->
       <div v-if="showKeywordSearch" class="form-group mb-0 mr-2">
         <label v-if="keywordSearchLabel" for="tableTopKeyword" class="mb-1">
           {{ keywordSearchLabel }}
@@ -111,7 +114,7 @@
         <button
           v-if="showResetButton"
           type="button"
-          class="btn btn-light btn-sm mr-2"
+          class="btn btn-secondary btn-sm mr-2"
           @click="handleReset"
         >
           Reset
@@ -192,9 +195,9 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'search', keyword: string): void
-  (e: 'filter-apply'): void
-  (e: 'update:pageSize', value: number): void
+  (e: 'searchFilter', keyword: string): void
+  (e: 'resetFilter'): void
+  (e: 'updatePageSize', value: number): void
   (e: 'update:keywordTextValue', value: string): void
   (e: 'update:keywordSearchValue', value: string | number): void
   (e: 'update:searchCategoryValue', value: string | number): void
@@ -233,16 +236,16 @@ function onKeywordSearchTypeChange(event: Event) {
 
 function onPageSizeChange(event: Event) {
   const target = event.target as HTMLSelectElement
-  emit('update:pageSize', Number(target.value))
+  emit('updatePageSize', Number(target.value))
 }
 
 function handleSearch() {
-  emit('search', searchKeyword.value)
+  emit('searchFilter', searchKeyword.value)
 }
 
 function handleReset() {
   searchKeyword.value = ''
   emit('update:keywordTextValue', '')
-  emit('filter-apply')
+  emit('resetFilter')
 }
 </script>
