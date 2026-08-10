@@ -89,13 +89,8 @@ onUnmounted(() => {
               <ul class="collapse show" id="content-menu" data-parent="#sidebar-menu">
                 <div class="sub-menu">
                   <li>
-                    <RouterLink class="sidenav-item-link" to="/contents/new">
-                      <span class="nav-text">New Create</span>
-                    </RouterLink>
-                  </li>
-                  <li>
                     <RouterLink class="sidenav-item-link" to="/contents">
-                      <span class="nav-text">Data Table</span>
+                      <span class="nav-text">Content Management</span>
                     </RouterLink>
                   </li>
                 </div>

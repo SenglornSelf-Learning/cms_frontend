@@ -15,6 +15,7 @@
                 {{ actionLabel }}
               </RouterLink>
 
+              <!--  place custom HTML inside the frame, can be used to add custom buttons or actions -->
               <slot name="actions" />
             </div>
           </div>

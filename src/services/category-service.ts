@@ -11,7 +11,7 @@ interface ResponseBody<T> {
 
 /** Paginated list matching backend PageResponse<T>. */
 interface PageResponse<T> {
-  items: T[]
+  payload: T[]
   totalCount: number
   pageIndex: number
   pageSize: number
@@ -97,8 +97,9 @@ export class CategoryService {
       CATEGORIES_LIST,
       { params: { pageIndex, pageSize, orderBy, ...(name ? { name } : {}) } },
     )
+    
     const page = data?.data
-    const rows = page?.items ?? []
+    const rows = page?.payload ?? []
     const totalCount = page?.totalCount ?? rows.length
     const categories = rows.map((raw, index) =>
       rawToListItem(raw, index, totalCount, pageIndex, pageSize),

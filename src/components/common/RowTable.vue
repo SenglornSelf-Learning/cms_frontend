@@ -29,10 +29,6 @@
 .row_table :deep(tr:last-child) th,
 .row_table :deep(tr:last-child) td{border-bottom:1px solid #ddd}
 :deep(.required)::after{content:'*';margin-left:4px;color:var(--danger)}
-:deep(.file_item){ margin-bottom: 4px; }
-:deep(.file_item):last-child{ margin-bottom:0}
-:deep(.file_link){display:flex;align-items:center;gap:4px;color:var(--primary)}
-:deep(.file_link):before{content:'';display:inline-block;width:20px;height:20px;margin-top:-1px;background:url('@/assets/new/images/common/ico_file_download.svg')no-repeat center / 100%}
 :deep(.cell_link){color:var(--primary);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 </style>
 <style>
