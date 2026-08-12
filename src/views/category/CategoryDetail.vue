@@ -1,7 +1,7 @@
 <template>
   <MasterContentLayout title="Category Detail" col-class="col-lg-8">
     <template v-if="category">
-      <RowTable>
+      <DataRows>
         <template #colgroup>
           <colgroup>
             <col style="width: 25%" />
@@ -24,7 +24,7 @@
           <th>Created At</th>
           <td>{{ category.createdAt }}</td>
         </tr>
-      </RowTable>
+      </DataRows>
     </template>
     <div class="mt-3 d-flex justify-content-end">
       <RouterLink to="/categories" class="btn btn-secondary ml-2">Back to list</RouterLink>
@@ -39,10 +39,10 @@
         v-if="category"
         type="button"
         class="btn btn-danger ml-2"
-        :disabled="deleting"
+        :disabled="isDeleting"
         @click="deleteCategory"
       >
-        {{ deleting ? 'Deleting…' : 'Delete' }}
+        {{ isDeleting ? 'Deleting…' : 'Delete' }}
       </button>
     </div>
   </MasterContentLayout>
@@ -52,9 +52,9 @@
 import { ref, toRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
-import RowTable from '@/components/common/RowTable.vue'
+import DataRows from '@/components/common/DataRows.vue'
 import { getCategoryService } from '@/services'
-import type { Category } from '@/types/category'
+import type { CategoryFields } from '@/types/category'
 
 const props = defineProps<{
   id: string
@@ -62,19 +62,19 @@ const props = defineProps<{
 
 const router = useRouter()
 const idRef = toRef(props, 'id')
-const category = ref<Category | null>(null)
+const category = ref<CategoryFields | null>(null)
 const error = ref<string | null>(null)
-const loading = ref(true)
-const deleting = ref(false)
+const isLoading = ref(true)
+const isDeleting = ref(false)
 
 async function fetchCategoryDetail() {
-  loading.value = true
+  isLoading.value = true
   error.value = null
   category.value = null
   const id = Number(idRef.value)
   if (!Number.isFinite(id)) {
     error.value = 'Invalid id'
-    loading.value = false
+    isLoading.value = false
     return
   }
   try {
@@ -82,7 +82,7 @@ async function fetchCategoryDetail() {
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Not found'
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
 
@@ -91,7 +91,7 @@ async function deleteCategory() {
   if (!Number.isFinite(id) || !category.value) return
   if (!confirm(`Delete category "${category.value.name}"?`)) return
 
-  deleting.value = true
+  isDeleting.value = true
   error.value = null
   try {
     await getCategoryService().deleteCategory(id)
@@ -99,7 +99,7 @@ async function deleteCategory() {
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Delete failed'
   } finally {
-    deleting.value = false
+    isDeleting.value = false
   }
 }
 

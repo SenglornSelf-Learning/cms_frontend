@@ -15,8 +15,8 @@
 </template>
 
 <script setup lang="ts">
-// RowTable: 상세 정보 등을 표시하기 위한 가로형 테이블 컴포넌트
-// 사용법: <RowTable><tr><th>제목</th><td>내용</td></tr>...</RowTable>
+// For detailed information display.
+// Usage: <DataRows><tr><th>Title</th><td>Content</td></tr>...</DataRows>
 </script>
 
 <style scoped>

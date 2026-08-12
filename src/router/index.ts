@@ -48,7 +48,7 @@ const router = createRouter({
           path: 'contents/detail/:id',
           name: 'contentDetail',
           component: () => import('@/views/content/ContentDetail.vue'),
-          props: true,
+          props: (route) => ({ id: Number(route.params.id) }),
         },
         {
           path: 'contents/:id/edit',

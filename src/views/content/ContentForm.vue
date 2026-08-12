@@ -1,121 +1,196 @@
 <template>
   <MasterContentLayout title="Create content" col-class="col-lg-8">
-    <p v-if="error" class="text-danger">{{ error }}</p>
-    <form @submit.prevent="submit">
-      <div class="form-group">
-        <label for="title">Title</label>
-        <input id="title" v-model="title" type="text" class="form-control" autocomplete="off" />
-      </div>
+    <form @submit.prevent="onSubmit">
+      <FormRows
+        label="Title"
+        required
+        input-id="title"
+        v-model="form.title"
+        :error="fieldErrors.title"
+        @update:modelValue="clearFieldError('title')"
+      />
 
-      <div class="form-group">
-        <label for="slug">Slug</label>
-        <input id="slug" v-model="slug" type="text" class="form-control" autocomplete="off" />
-        <small class="form-text text-muted">Leave blank to generate from the title.</small>
-      </div>
+      <FormRows
+        label="Slug"
+        input-id="slug"
+        v-model="form.slug"
+        hint="Leave blank to generate from the title."
+        :error="fieldErrors.slug"
+        @update:modelValue="clearFieldError('slug')"
+      />
 
-      <div class="form-group">
-        <label for="category">Category</label>
-        <select id="category" v-model="categoryId" class="form-control" :disabled="loadingCategories">
-          <option :value="null">No category</option>
-          <option v-for="category in categories" :key="category.id ?? category.name" :value="category.id">
-            {{ category.name }}
-          </option>
-        </select>
-      </div>
+      <FormRows
+        label="Category"
+        type="select"
+        input-id="category"
+        v-model="form.categoryId"
+        :options="categoryOptions"
+        :disabled="isLoading"
+        :error="fieldErrors.categoryId"
+        @update:modelValue="clearFieldError('categoryId')"
+      />
 
-      <div class="form-group">
-        <label for="keyword">Keyword</label>
-        <input id="keyword" v-model="keyword" type="text" class="form-control" autocomplete="off" />
-      </div>
+      <FormRows
+        label="Keyword"
+        input-id="keyword"
+        v-model="form.keyword"
+        :error="fieldErrors.keyword"
+        @update:modelValue="clearFieldError('keyword')"
+      />
 
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea id="description" v-model="description" class="form-control" rows="3" />
-      </div>
+      <FormRows
+        label="Description"
+        type="textarea"
+        input-id="description"
+        :rows="3"
+        v-model="form.description"
+        :error="fieldErrors.description"
+        @update:modelValue="clearFieldError('description')"
+      />
 
-      <div class="form-group">
-        <label for="thumbnail">Thumbnail URL</label>
-        <input id="thumbnail" v-model="thumbnail" type="text" class="form-control" autocomplete="off" />
-      </div>
+      <FormRows
+        label="Thumbnail URL"
+        input-id="thumbnail"
+        v-model="form.thumbnail"
+        :error="fieldErrors.thumbnail"
+        @update:modelValue="clearFieldError('thumbnail')"
+      />
 
-      <div class="form-group">
-        <label for="editor">Content</label>
-        <textarea id="editor" v-model="editor" class="form-control" rows="8" />
-      </div>
+      <FormRows
+        label="Content"
+        type="textarea"
+        input-id="editor"
+        :rows="8"
+        v-model="form.editor"
+        :error="fieldErrors.editor"
+        @update:modelValue="clearFieldError('editor')"
+      />
 
-      <button type="submit" class="btn btn-primary" :disabled="saving">
-        {{ saving ? 'Saving...' : 'Save' }}
-      </button>
-      <RouterLink to="/contents" class="btn btn-light ml-2">Cancel</RouterLink>
+      <div class="form_actions">
+        <button type="submit" class="btn btn-primary" :disabled="submitting">
+          {{ submitting ? 'Submitting…' : 'Save' }}
+        </button>
+        <RouterLink to="/contents" class="btn btn-light ml-2">Cancel</RouterLink>
+      </div>
     </form>
   </MasterContentLayout>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
-import { getCategoryService, getContentService, type CategoryListItem } from '@/services'
+import FormRows, { type FormRowOption } from '@/components/common/FormRows.vue'
+import { getCategoryService, getContentService } from '@/services'
+import type { CategoryListItem } from '@/types/category'
 import type { CreateContentPayload } from '@/types/content'
 
 const router = useRouter()
 const categories = ref<CategoryListItem[]>([])
-const title = ref('')
-const slug = ref('')
-const keyword = ref('')
-const description = ref('')
-const thumbnail = ref('')
-const editor = ref('')
-const categoryId = ref<number | null>(null)
-const loadingCategories = ref(true)
-const saving = ref(false)
-const error = ref<string | null>(null)
+const isLoading = ref(true)
+const submitting = ref(false)
 
-onMounted(async () => {
+type FieldErrors = Partial<
+  Record<'title' | 'slug' | 'keyword' | 'description' | 'thumbnail' | 'editor' | 'categoryId', string>
+>
+const fieldErrors = ref<FieldErrors>({})
+
+function clearFieldError(field: keyof FieldErrors) {
+  if (!fieldErrors.value[field]) return
+  fieldErrors.value = { ...fieldErrors.value, [field]: undefined }
+}
+
+const form = ref<CreateContentPayload>({
+  title: '',
+  slug: '',
+  keyword: '',
+  description: '',
+  thumbnail: '',
+  editor: '',
+  categoryId: null as number | null,
+})
+
+const categoryOptions = computed<FormRowOption[]>(() => [
+  { label: 'No category', value: null },
+  ...categories.value.map((category) => ({
+    label: category.name,
+    value: category.id ?? null,
+  })),
+])
+
+function resetForm() {
+  form.value = {
+    title: '',
+    slug: '',
+    keyword: '',
+    description: '',
+    thumbnail: '',
+    editor: '',
+    categoryId: null as number | null,
+  }
+  fieldErrors.value = {}
+  submitting.value = false
+}
+
+function createContentPayload(): CreateContentPayload {
+  return {
+    title: form.value.title.trim(),
+    slug: form.value.slug?.trim(),
+    keyword: form.value.keyword?.trim(),
+    description: form.value.description?.trim(),
+    thumbnail: form.value.thumbnail?.trim(),
+    editor: form.value.editor?.trim(),
+    categoryId: form.value.categoryId,
+  }
+}
+
+function validateForm(): boolean {
+  if (!form.value.title.trim()) {
+    fieldErrors.value.title = 'Title is required'
+    return false
+  }
+  return true
+}
+
+async function onSubmit() {
+  if (!validateForm()) return
+
+  const payload = createContentPayload()
+  submitting.value = true
+
+  try {
+    await getContentService().createContent(payload)
+  } catch (err) {
+    console.error('Failed to save content', err)
+  } finally {
+    submitting.value = false
+    await router.push('/contents')
+    resetForm()
+  }
+}
+
+async function fetchCategories() {
+  isLoading.value = true
   try {
     const { categories: rows } = await getCategoryService().getCategories()
     categories.value = rows
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to load categories'
+  } catch (err) {
+    console.error('Failed to load categories', err)
   } finally {
-    loadingCategories.value = false
+    isLoading.value = false
   }
+}
+
+onMounted(() => {
+  void fetchCategories()
 })
-
-function optionalText(value: string): string | undefined {
-  const trimmed = value.trim()
-  return trimmed || undefined
-}
-
-async function submit() {
-  error.value = null
-  const trimmedTitle = title.value.trim()
-  if (!trimmedTitle) {
-    error.value = 'Title is required'
-    return
-  }
-
-  const payload: CreateContentPayload = {
-    title: trimmedTitle,
-    slug: optionalText(slug.value),
-    keyword: optionalText(keyword.value),
-    description: optionalText(description.value),
-    thumbnail: optionalText(thumbnail.value),
-    editor: optionalText(editor.value),
-    categoryId: categoryId.value,
-  }
-
-  saving.value = true
-  try {
-    await getContentService().createContent(payload)
-    await router.push('/contents')
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Save failed'
-  } finally {
-    saving.value = false
-  }
-}
 </script>
 
 <style scoped>
+.form_actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding: 0 0.8rem;
+}
 </style>

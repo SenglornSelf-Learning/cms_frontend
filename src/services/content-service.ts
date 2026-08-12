@@ -1,22 +1,10 @@
-import type { CmsContent, CreateContentPayload } from '@/types/content'
+import type { PageResponse, ResponseBody } from '@/types/cms-api'
+import type {
+  ContentFields,
+  ContentListItem,
+  CreateContentPayload,
+} from '@/types/content'
 import { getHttpClient } from './http-client'
-
-/** API envelope matching backend ResponseBody<T>. */
-interface ResponseBody<T> {
-  status: boolean
-  statusCode: number
-  message: string
-  data: T
-}
-
-/** Paginated list matching backend PageResponse<T>. */
-interface PageResponse<T> {
-  payload: T[]
-  totalCount: number
-  pageIndex: number
-  pageSize: number
-  totalPages: number
-}
 
 export interface ContentListParams {
   pageIndex?: number
@@ -24,18 +12,6 @@ export interface ContentListParams {
   orderBy?: string
   title?: string
   editor?: string
-}
-
-/** Content list row (mapped from API wire shape). */
-export interface ContentListItem {
-  id: number
-  no: number
-  title: string
-  editor: string
-  slug: string
-  keyword: string
-  categoryId: number | null
-  createdAt: string | null
 }
 
 /** Display helper: null/empty → "-" */
@@ -46,7 +22,7 @@ function toDisplay(value: string | number | null | undefined): string {
 
 /** convert raw data to list item */
 function rawToListItem(
-  raw: CmsContent,
+  raw: ContentFields,
   index: number,
   totalCount: number,
   pageIndex: number,
@@ -68,6 +44,7 @@ function rawToListItem(
 const CONTENTS_LIST = '/api/contents/list'
 const CONTENT_DETAIL = (id: number) => `/api/contents/getById/${id}`
 const CONTENTS_CREATE = '/api/contents'
+const CONTENT_DELETE = (id: number) => `/api/contents/delete/${id}`
 
 /**
  * Content API — Planfit-style service: raw DTO → list mapping + lazy singleton.
@@ -91,7 +68,7 @@ export class ContentService {
     const title = params.title?.trim() || undefined
     const editor = params.editor?.trim() || undefined
 
-    const { data } = await this.client.get<ResponseBody<PageResponse<CmsContent>>>(CONTENTS_LIST, {
+    const { data } = await this.client.get<ResponseBody<PageResponse<ContentFields>>>(CONTENTS_LIST, {
       params: {
         pageIndex,
         pageSize,
@@ -101,7 +78,6 @@ export class ContentService {
       },
     })
 
-    console.log('data', data) 
     const page = data?.data
     const rows = page?.payload ?? []
     const totalCount = page?.totalCount ?? rows.length
@@ -119,15 +95,20 @@ export class ContentService {
   }
 
   // get content by id
-  async getContentById(id: number): Promise<CmsContent> {
-    const { data } = await this.client.get<ResponseBody<CmsContent>>(CONTENT_DETAIL(id))
-    return data.data
+  async getContentById(id: number): Promise<ContentFields> {
+    const { data } = await this.client.get<ResponseBody<ContentFields>>(CONTENT_DETAIL(id))
+    return data.data as ContentFields
   }
 
   // create content
-  async createContent(payload: CreateContentPayload): Promise<CmsContent> {
-    const { data } = await this.client.post<ResponseBody<CmsContent>>(CONTENTS_CREATE, payload)
-    return data.data
+  async createContent(payload: CreateContentPayload): Promise<ContentFields> {
+    const { data } = await this.client.post<ResponseBody<ContentFields>>(CONTENTS_CREATE, payload)
+    return data.data as ContentFields
+  }
+
+  // delete content
+  async deleteContent(id: number): Promise<void> {
+    await this.client.delete<ResponseBody<null>>(CONTENT_DELETE(id))
   }
 }
 

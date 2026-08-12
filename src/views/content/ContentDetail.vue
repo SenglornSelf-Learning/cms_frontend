@@ -1,7 +1,7 @@
 <template>
-  <MasterContentLayout title="content Detail" col-class="col-lg-8">
+  <MasterContentLayout title="Content Detail" col-class="col-lg-8">
     <template v-if="content">
-      <RowTable>
+      <DataRows>
         <template #colgroup>
           <colgroup>
             <col style="width: 25%" />
@@ -30,16 +30,16 @@
         </tr>
         <tr>
           <th>Category</th>
-          <td>{{ content.categoryId }}</td>
+          <td>{{ categoryDetail?.name || 'N/A' }}</td>
         </tr>
         <tr>
           <th>Created At</th>
           <td>{{ content.createdAt }}</td>
         </tr>
-      </RowTable>
+      </DataRows>
     </template>
     <div class="mt-3 d-flex justify-content-end">
-      <RouterLink to="/categories" class="btn btn-secondary ml-2">Back to list</RouterLink>
+      <RouterLink to="/contents" class="btn btn-secondary ml-2">Back to list</RouterLink>
       <RouterLink
         v-if="content"
         :to="{ name: 'contentEdit', params: { id: content.id } }"
@@ -51,77 +51,94 @@
         v-if="content"
         type="button"
         class="btn btn-danger ml-2"
-        :disabled="deleting"
-        @click="deletecontent"
+        :disabled="isDeleting"
+        @click="deleteContent"
       >
-        {{ deleting ? 'Deleting…' : 'Delete' }}
+        {{ isDeleting ? 'Deleting…' : 'Delete' }}
       </button>
     </div>
   </MasterContentLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, toRef, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
-import RowTable from '@/components/common/RowTable.vue'
+import DataRows from '@/components/common/DataRows.vue'
 import { getContentService } from '@/services/content-service'
 import { getCategoryService } from '@/services/category-service'
 
-import type { CmsContent } from '@/types/content'
-import type { Category } from '@/types/category'
+import type { ContentFields } from '@/types/content'
+import type { CategoryFields } from '@/types/category'
 
 const props = defineProps<{
-  id: string
+  id: number
 }>()
-
-const idRef = toRef(props, 'id')
-const content = ref<CmsContent | null>(null)
-const error = ref<string | null>(null)
-const loading = ref(true)
-const category = ref<Category | null>(null)
+const contentId = props.id
+const router = useRouter()
+const content = ref<ContentFields | null>(null)
+const categoryDetail = ref<CategoryFields | null>(null)
+const isError = ref<string | null>(null)
+const isLoading = ref(true)
+const isDeleting = ref(false)
 
 async function fetchContentDetail() {
-  loading.value = true
-  error.value = null
-  content.value = null
-  const numericId = Number(idRef.value)
-  if (!Number.isFinite(numericId)) {
-    error.value = 'Invalid id'
-    loading.value = false
+  isLoading.value = true
+  isError.value = null
+ 
+  if (!Number.isFinite(contentId)) {
+    isError.value = 'Invalid id'
+    isLoading.value = false
     return
   }
+
   try {
-    content.value = await getContentService().getContentById(numericId)
+    content.value = await getContentService().getContentById(contentId)
+    await fetchCategoryDetail()
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Not found'
+    isError.value = e instanceof Error ? e.message : 'Not found'
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
 
 async function fetchCategoryDetail() {
-  loading.value = true
-  error.value = null
-  category.value = null
-  const id = Number(idRef.value)
-  if (!Number.isFinite(id)) {
-    error.value = 'Invalid id'
-    loading.value = false
+  const categoryId = content.value?.categoryId
+  if (!categoryId) {
+    categoryDetail.value = null
     return
   }
+
   try {
-    category.value = await getCategoryService().getCategoryById(id)
+    categoryDetail.value = await getCategoryService().getCategoryById(categoryId)
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Not found'
-  } finally {
-    loading.value = false
+    isError.value = e instanceof Error ? e.message : 'Category not found'
   }
 }
 
-watch(idRef, () => {
-  void fetchContentDetail()
-}, { immediate: true })
+async function deleteContent() {
+  if (!Number.isFinite(props.id) || !content.value) return
+  if (!confirm(`Delete content "${content.value.title}"?`)) return
+
+  isDeleting.value = true
+  isError.value = null
+  try {
+    await getContentService().deleteContent(props.id)
+    await router.push('/contents')
+  } catch (e) {
+    isError.value = e instanceof Error ? e.message : 'Delete failed'
+  } finally {
+    isDeleting.value = false
+  }
+}
+
+watch(
+  () => props.id,
+  () => {
+    void fetchContentDetail()
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped>

@@ -1,44 +1,16 @@
-import type { Category } from '@/types/category'
+import type { PageResponse, ResponseBody } from '@/types/cms-api'
+import type {
+  CategoryFields,
+  CategoryListItem,
+  CreateCategoryPayload,
+} from '@/types/category'
 import { getHttpClient } from './http-client'
-
-/** API envelope matching backend ResponseBody<T>. */
-interface ResponseBody<T> {
-  status: boolean
-  statusCode: number
-  message: string
-  data: T
-}
-
-/** Paginated list matching backend PageResponse<T>. */
-interface PageResponse<T> {
-  payload: T[]
-  totalCount: number
-  pageIndex: number
-  pageSize: number
-  totalPages: number
-}
 
 export interface CategoryListParams {
   pageIndex?: number
   pageSize?: number
   orderBy?: string
   name?: string
-}
-
-/** Payload for POST /api/categories (matches CategoryRequest). Active = N, Inactive = Y */
-export interface CreateCategoryPayload {
-  name: string
-  status: 'N' | 'Y'
-}
-
-/** Category list row (mapped from API wire shape). */
-export interface CategoryListItem {
-  id: number
-  no: number
-  name: string
-  status: 'Y' | 'N'
-  deletedYn: string
-  createdAt: string | null
 }
 
 /** Display helper: null/empty → "-" */
@@ -48,7 +20,7 @@ function toDisplay(value: string | number | null | undefined): string {
 }
 
 function rawToListItem(
-  raw: Category,
+  raw: CategoryFields,
   index: number,
   totalCount: number,
   pageIndex: number,
@@ -93,17 +65,18 @@ export class CategoryService {
     const orderBy = params.orderBy ?? 'createdAt,DESC'
     const name = params.name?.trim() || undefined
 
-    const { data } = await this.client.get<ResponseBody<PageResponse<Category>>>(
+    const { data } = await this.client.get<ResponseBody<PageResponse<CategoryFields>>>(
       CATEGORIES_LIST,
       { params: { pageIndex, pageSize, orderBy, ...(name ? { name } : {}) } },
     )
-    
+
     const page = data?.data
     const rows = page?.payload ?? []
     const totalCount = page?.totalCount ?? rows.length
     const categories = rows.map((raw, index) =>
       rawToListItem(raw, index, totalCount, pageIndex, pageSize),
     )
+
     return {
       categories,
       totalCount,
@@ -114,21 +87,21 @@ export class CategoryService {
   }
 
   // get category by id
-  async getCategoryById(id: number): Promise<Category> {
-    const { data } = await this.client.get<ResponseBody<Category>>(CATEGORY_DETAIL(id))
-    return data.data
+  async getCategoryById(id: number): Promise<CategoryFields> {
+    const { data } = await this.client.get<ResponseBody<CategoryFields>>(CATEGORY_DETAIL(id))
+    return data.data as CategoryFields
   }
 
   // create category
-  async createCategory(payload: CreateCategoryPayload): Promise<Category> {
-    const { data } = await this.client.post<ResponseBody<Category>>(CATEGORIES_CREATE, payload)
-    return data.data
+  async createCategory(payload: CreateCategoryPayload): Promise<CategoryFields> {
+    const { data } = await this.client.post<ResponseBody<CategoryFields>>(CATEGORIES_CREATE, payload)
+    return data.data as CategoryFields
   }
 
   // update category by id
-  async updateCategoryById(id: number, payload: CreateCategoryPayload): Promise<Category> {
-    const { data } = await this.client.put<ResponseBody<Category>>(CATEGORY_UPDATE(id), payload)
-    return data.data
+  async updateCategoryById(id: number, payload: CreateCategoryPayload): Promise<CategoryFields> {
+    const { data } = await this.client.put<ResponseBody<CategoryFields>>(CATEGORY_UPDATE(id), payload)
+    return data.data as CategoryFields
   }
 
   // delete category

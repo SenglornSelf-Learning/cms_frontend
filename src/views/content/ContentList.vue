@@ -16,7 +16,7 @@
     <div class="table-results-area" :class="{ 'is-loading': isLoading }">
       <p v-if="error" class="text-danger mb-3">{{ error }}</p>
 
-      <NewTable
+      <TableList
         :columns="columns"
         :data="tableData"
         empty-text="No content found"
@@ -41,10 +41,11 @@
 import { computed, onMounted, ref } from 'vue'
 import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
 import TableTop from '@/components/common/TableTop.vue'
-import NewTable, { type TableColumn, type TableRow } from '@/components/common/NewTable.vue'
+import TableList, { type TableColumn, type TableRow } from '@/components/common/TableList.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import ProgressSpinner from '@/components/common/ProgressSpinner.vue'
-import { getContentService, type ContentListItem } from '@/services'
+import { getContentService } from '@/services'
+import type { ContentListItem } from '@/types/content'
 
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
@@ -82,7 +83,7 @@ function mapContentToRow(item: ContentListItem, index: number, totalCount: numbe
     title: {
       type: 'link',
       value: item.title,
-      to: `/contents/detail/${item.id}`,
+      to: { name: 'contentDetail', params: { id: item.id } },
     },
     editor: item.editor,
     slug: item.slug,

@@ -46,7 +46,8 @@
 import { ref, computed, onMounted} from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
-import { getCategoryService, type CreateCategoryPayload } from '@/services'
+import { getCategoryService } from '@/services'
+import type { CreateCategoryPayload } from '@/types/category'
 
 const router = useRouter()
 const route = useRoute()
@@ -129,12 +130,12 @@ async function onSubmit() {
     } else {
       await getCategoryService().createCategory(payload)
     }
-    resetForm()
-    await router.push('/categories')
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Save failed'
+  } catch (err) {
+    console.error('Failed to save category', err)
   } finally {
     submitting.value = false
+    await router.push('/categories')
+    resetForm()
   }
 }
 

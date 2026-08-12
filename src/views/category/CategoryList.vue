@@ -18,7 +18,7 @@
     <div class="table-results-area" :class="{ 'is-loading': isLoading }">
       <p v-if="error" class="text-danger mb-3">{{ error }}</p>
 
-      <NewTable
+      <TableList
         :columns="columns"
         :data="tableData"
         empty-text="No category found"
@@ -32,7 +32,7 @@
             {{ row.status }}
           </button>
         </template>
-      </NewTable>
+      </TableList>
 
       <Pagination
         :total="totalItems"
@@ -53,10 +53,11 @@
 import { computed, onMounted, ref } from 'vue'
 import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
 import TableTop from '@/components/common/TableTop.vue'
-import NewTable, { type TableColumn, type TableRow } from '@/components/common/NewTable.vue'
+import TableList, { type TableColumn, type TableRow } from '@/components/common/TableList.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import ProgressSpinner from '@/components/common/ProgressSpinner.vue'
-import { getCategoryService, type CategoryListItem } from '@/services'
+import { getCategoryService } from '@/services'
+import type { CategoryListItem } from '@/types/category'
 
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
