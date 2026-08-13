@@ -52,9 +52,6 @@
         @input="onTextInput"
       />
 
-      <slot name="hint">
-        <small v-if="hint" class="form-text text-muted">{{ hint }}</small>
-      </slot>
       <p v-if="error" class="form_error">{{ error }}</p>
     </div>
   </div>
@@ -78,7 +75,6 @@ const props = withDefaults(
     placeholder?: string
     disabled?: boolean
     error?: string
-    hint?: string
     rows?: number
     inputId?: string
   }>(),
@@ -90,7 +86,6 @@ const props = withDefaults(
     placeholder: '',
     disabled: false,
     error: '',
-    hint: '',
     rows: 3,
     inputId: '',
   },
@@ -164,9 +159,5 @@ function onSelectChange(event: Event) {
   margin-top: 0.25rem;
   font-size: 80%;
   color: #dc3545;
-}
-.form-text {
-  display: block;
-  margin-top: 0.25rem;
 }
 </style>

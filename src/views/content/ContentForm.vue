@@ -14,13 +14,13 @@
         label="Slug"
         input-id="slug"
         v-model="form.slug"
-        hint="Leave blank to generate from the title."
         :error="fieldErrors.slug"
         @update:modelValue="clearFieldError('slug')"
       />
 
       <FormRows
         label="Category"
+        required
         type="select"
         input-id="category"
         v-model="form.categoryId"
@@ -78,7 +78,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
 import FormRows, { type FormRowOption } from '@/components/common/FormRows.vue'
 import { getCategoryService, getContentService } from '@/services'
@@ -86,13 +86,12 @@ import type { CategoryListItem } from '@/types/category'
 import type { CreateContentPayload } from '@/types/content'
 
 const router = useRouter()
+const route = useRoute()
 const categories = ref<CategoryListItem[]>([])
 const isLoading = ref(true)
 const submitting = ref(false)
 
-type FieldErrors = Partial<
-  Record<'title' | 'slug' | 'keyword' | 'description' | 'thumbnail' | 'editor' | 'categoryId', string>
->
+type FieldErrors = Partial<Record<'title' | 'slug' | 'keyword' | 'description' | 'thumbnail' | 'editor' | 'categoryId', string>>
 const fieldErrors = ref<FieldErrors>({})
 
 function clearFieldError(field: keyof FieldErrors) {
@@ -149,17 +148,73 @@ function validateForm(): boolean {
     fieldErrors.value.title = 'Title is required'
     return false
   }
+  if (!form.value.categoryId) {
+    fieldErrors.value.categoryId = 'Category is required'
+    return false
+  }
   return true
 }
 
+async function fetchCategories() {
+  isLoading.value = true
+  try {
+    const { categories: rows } = await getCategoryService().getCategories({
+      pageIndex: 1,
+      pageSize: 1000,
+      orderBy: 'createdAt,DESC',
+    })
+    categories.value = rows
+  } catch (err) {
+    console.error('Failed to load categories', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// checking for edit route
+const isContentEditRoute = computed(() => route.name === 'contentEdit')
+const isEdit = computed(() => isContentEditRoute.value)
+const contentEditId = computed(() => {
+  if (!isContentEditRoute.value) return undefined
+  return route.params.id
+})
+
+async function fetchContentDetail() {
+  if (!isEdit.value) return
+  const id = Number(contentEditId.value)
+  if (!Number.isFinite(id)) return
+
+  try {
+    const content = await getContentService().getContentById(id)
+    const categoryId = content.categoryId != null &&
+      categories.value.some((c) => c.id === content.categoryId) ? content.categoryId : null
+
+    form.value = {
+      title: content.title ?? '',
+      slug: content.slug ?? '',
+      keyword: content.keyword ?? '',
+      description: content.description ?? '',
+      thumbnail: content.thumbnail ?? '',
+      editor: content.editor ?? '',
+      categoryId,
+    }
+  } catch (err) {
+    console.error('Failed to fetch content detail', err)
+  }
+}
+// edit finished
+
 async function onSubmit() {
   if (!validateForm()) return
-
   const payload = createContentPayload()
   submitting.value = true
 
   try {
-    await getContentService().createContent(payload)
+    if(isEdit.value) {
+      await getContentService().updateContent(Number(contentEditId.value), payload)
+    } else {
+      await getContentService().createContent(payload)
+    }
   } catch (err) {
     console.error('Failed to save content', err)
   } finally {
@@ -169,20 +224,9 @@ async function onSubmit() {
   }
 }
 
-async function fetchCategories() {
-  isLoading.value = true
-  try {
-    const { categories: rows } = await getCategoryService().getCategories()
-    categories.value = rows
-  } catch (err) {
-    console.error('Failed to load categories', err)
-  } finally {
-    isLoading.value = false
-  }
-}
-
-onMounted(() => {
-  void fetchCategories()
+onMounted(async () => {
+  await fetchCategories()
+  await fetchContentDetail()
 })
 </script>
 

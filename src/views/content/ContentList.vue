@@ -14,8 +14,6 @@
     />
 
     <div class="table-results-area" :class="{ 'is-loading': isLoading }">
-      <p v-if="error" class="text-danger mb-3">{{ error }}</p>
-
       <TableList
         :columns="columns"
         :data="tableData"
@@ -51,15 +49,16 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const totalItems = ref(0)
 const tableData = ref<TableRow[]>([])
-const error = ref<string | null>(null)
 const isLoading = ref(false)
 const searchKeyword = ref('')
 
 const columns = computed<TableColumn[]>(() => [
   { key: 'no', label: 'No', width: '6%' },
-  { key: 'title', label: 'Title' },
-  { key: 'editor', label: 'Editor' },
   { key: 'slug', label: 'Slug' },
+  { key: 'title', label: 'Title' },
+  { key: 'keyword', label: 'Keyword' },
+  { key: 'editor', label: 'Editor' },
+  { key: 'thumbnail', label: 'Thumbnail' },
   { key: 'categoryId', label: 'Category', width: '12%' },
 ])
 
@@ -80,20 +79,21 @@ function mapContentToRow(item: ContentListItem, index: number, totalCount: numbe
   return {
     id: item.id,
     no: totalCount - rowOffset,
+    slug: item.slug,
     title: {
       type: 'link',
       value: item.title,
       to: { name: 'contentDetail', params: { id: item.id } },
     },
+    keyword: item.keyword,
     editor: item.editor,
-    slug: item.slug,
+    thumbnail: item.thumbnail ?? '-',
     categoryId: item.categoryId ?? '-',
   }
 }
 
 async function fetchContents() {
   isLoading.value = true
-  error.value = null
   try {
     const result = await getContentService().getContents({
       pageIndex: currentPage.value,
@@ -106,8 +106,8 @@ async function fetchContents() {
       mapContentToRow(item, index, result.totalCount),
     )
     totalItems.value = result.totalCount
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to load contents'
+  } catch (err) {
+    console.error('Failed to load contents', err)
     tableData.value = []
     totalItems.value = 0
   } finally {

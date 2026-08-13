@@ -25,6 +25,7 @@ export interface ContentListItem {
   editor: string
   slug: string
   keyword: string
+  thumbnail: string | null
   categoryId: number | null
   createdAt: string | null
 }

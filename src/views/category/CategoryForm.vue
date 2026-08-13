@@ -95,13 +95,13 @@ function buildCategoryPayload(): CreateCategoryPayload {
   }
 }
 
+// checking for edit route
 const isCategoryEditRoute = computed(() => route.name === 'categoryEdit')
 const isEdit = computed(() => isCategoryEditRoute.value)
 const categoryEditId = computed(() => {
   if (!isCategoryEditRoute.value) return undefined
   return route.params.id
 })
-
 
 async function fetchCategoryDetail() {
   if (!isEdit.value) return
@@ -112,10 +112,11 @@ async function fetchCategoryDetail() {
       name: category.name,
       status: category.status as CategoryStatus,
     }
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to fetch category detail'
+  } catch (err) {
+    console.error('Failed to fetch category detail', err)
   }
 }
+// edit finish
 
 async function onSubmit() {
   error.value = null

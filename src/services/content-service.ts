@@ -36,6 +36,7 @@ function rawToListItem(
     editor: toDisplay(raw.editor),
     slug: toDisplay(raw.slug),
     keyword: toDisplay(raw.keyword),
+    thumbnail: toDisplay(raw.thumbnail),
     categoryId: raw.categoryId ?? null,
     createdAt: raw.createdAt ?? null,
   }
@@ -44,6 +45,7 @@ function rawToListItem(
 const CONTENTS_LIST = '/api/contents/list'
 const CONTENT_DETAIL = (id: number) => `/api/contents/getById/${id}`
 const CONTENTS_CREATE = '/api/contents'
+const CONTENTS_UPDATE = (id: number) => `/api/contents/update/${id}`
 const CONTENT_DELETE = (id: number) => `/api/contents/delete/${id}`
 
 /**
@@ -103,6 +105,12 @@ export class ContentService {
   // create content
   async createContent(payload: CreateContentPayload): Promise<ContentFields> {
     const { data } = await this.client.post<ResponseBody<ContentFields>>(CONTENTS_CREATE, payload)
+    return data.data as ContentFields
+  }
+
+  // update content
+  async updateContent(id: number, payload: CreateContentPayload): Promise<ContentFields> {
+    const { data } = await this.client.put<ResponseBody<ContentFields>>(CONTENTS_UPDATE(id), payload)
     return data.data as ContentFields
   }
 

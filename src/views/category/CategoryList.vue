@@ -118,8 +118,8 @@ async function fetchCategories() {
       mapCategoryToRow(item, index, result.totalCount),
     )
     totalItems.value = result.totalCount
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to load categories'
+  } catch (err) {
+    console.error('Failed to load categories', err)
     tableData.value = []
     totalItems.value = 0
   } finally {

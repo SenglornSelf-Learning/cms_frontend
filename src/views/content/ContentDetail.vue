@@ -1,5 +1,16 @@
 <template>
   <MasterContentLayout title="Content Detail" col-class="col-lg-8">
+    <!-- delete confirm modal -->
+    <DeleteModel
+      :isOpen="deleteConfirmOpen"
+      title="Delete"
+      :message="deleteMessage"
+      :loading="isDeleting"
+      @close="closeDeleteConfirm"
+      @confirm="confirmDelete"
+    />
+
+    <!-- content details -->
     <template v-if="content">
       <DataRows>
         <template #colgroup>
@@ -34,10 +45,12 @@
         </tr>
         <tr>
           <th>Created At</th>
-          <td>{{ content.createdAt }}</td>
+          <td><FormattedNumber :value="content.createdAt" /></td>
         </tr>
       </DataRows>
     </template>
+
+    <!-- action buttons -->
     <div class="mt-3 d-flex justify-content-end">
       <RouterLink to="/contents" class="btn btn-secondary ml-2">Back to list</RouterLink>
       <RouterLink
@@ -52,7 +65,7 @@
         type="button"
         class="btn btn-danger ml-2"
         :disabled="isDeleting"
-        @click="deleteContent"
+        @click="openDeleteConfirm"
       >
         {{ isDeleting ? 'Deleting…' : 'Delete' }}
       </button>
@@ -61,10 +74,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
 import DataRows from '@/components/common/DataRows.vue'
+import DeleteModel from '@/components/common/DeleteModel.vue'
+import FormattedNumber from '@/components/common/FormattedNumber.vue'
 import { getContentService } from '@/services/content-service'
 import { getCategoryService } from '@/services/category-service'
 
@@ -78,16 +93,28 @@ const contentId = props.id
 const router = useRouter()
 const content = ref<ContentFields | null>(null)
 const categoryDetail = ref<CategoryFields | null>(null)
-const isError = ref<string | null>(null)
 const isLoading = ref(true)
+
 const isDeleting = ref(false)
+const deleteConfirmOpen = ref(false)
+const deleteMessage = computed(
+  () => `Are you sure want to delete content "${content.value?.title ?? ''}"?`,
+)
+
+function openDeleteConfirm() {
+  if (!Number.isFinite(props.id) || !content.value) return
+  deleteConfirmOpen.value = true
+}
+
+function closeDeleteConfirm() {
+  deleteConfirmOpen.value = false
+}
 
 async function fetchContentDetail() {
   isLoading.value = true
-  isError.value = null
  
   if (!Number.isFinite(contentId)) {
-    isError.value = 'Invalid id'
+    console.error('Invalid id', contentId)
     isLoading.value = false
     return
   }
@@ -95,8 +122,8 @@ async function fetchContentDetail() {
   try {
     content.value = await getContentService().getContentById(contentId)
     await fetchCategoryDetail()
-  } catch (e) {
-    isError.value = e instanceof Error ? e.message : 'Not found'
+  } catch (err) {
+    console.error('Failed to fetch content detail', err)
   } finally {
     isLoading.value = false
   }
@@ -111,22 +138,23 @@ async function fetchCategoryDetail() {
 
   try {
     categoryDetail.value = await getCategoryService().getCategoryById(categoryId)
-  } catch (e) {
-    isError.value = e instanceof Error ? e.message : 'Category not found'
+  } catch (err) {
+    console.error('Failed to fetch category detail', err)
   }
 }
 
-async function deleteContent() {
+// confirm delete
+async function confirmDelete() {
   if (!Number.isFinite(props.id) || !content.value) return
-  if (!confirm(`Delete content "${content.value.title}"?`)) return
+  if (isDeleting.value) return
 
   isDeleting.value = true
-  isError.value = null
   try {
     await getContentService().deleteContent(props.id)
+    deleteConfirmOpen.value = false
     await router.push('/contents')
-  } catch (e) {
-    isError.value = e instanceof Error ? e.message : 'Delete failed'
+  } catch (err) {
+    console.error('Failed to delete content', err)
   } finally {
     isDeleting.value = false
   }
