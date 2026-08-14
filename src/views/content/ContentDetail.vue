@@ -28,10 +28,6 @@
           <td>{{ content.editor }}</td>
         </tr>
         <tr>
-          <th>Thumbnail</th>
-          <td>{{ content.thumbnail }}</td>
-        </tr>
-        <tr>
           <th>Keyword</th>
           <td>{{ content.keyword }}</td>
         </tr>
@@ -46,6 +42,21 @@
         <tr>
           <th>Created At</th>
           <td><FormattedNumber :value="content.createdAt" /></td>
+        </tr>
+        <tr>
+          <th>Thumbnail</th>
+          <td>
+            <div v-if="content.thumbnails?.length" class="thumbnail_gallery">
+              <img
+                v-for="thumbnail in content.thumbnails"
+                :key="thumbnail.id"
+                :src="resolveThumbnailUrl(thumbnail.url)"
+                :alt="thumbnail.originalFileName"
+                class="thumbnail_image"
+              />
+            </div>
+            <span v-else>-</span>
+          </td>
         </tr>
       </DataRows>
     </template>
@@ -80,7 +91,7 @@ import MasterContentLayout from '@/components/layout/content-layout/MasterConten
 import DataRows from '@/components/common/DataRows.vue'
 import DeleteModel from '@/components/common/DeleteModel.vue'
 import FormattedNumber from '@/components/common/FormattedNumber.vue'
-import { getContentService } from '@/services/content-service'
+import { getContentService, resolveThumbnailUrl } from '@/services/content-service'
 import { getCategoryService } from '@/services/category-service'
 
 import type { ContentFields } from '@/types/content'
@@ -173,5 +184,18 @@ watch(
 .content-editor {
   white-space: pre-wrap;
   word-break: break-word;
+}
+.thumbnail_gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.thumbnail_image {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  border: 1px solid #e8ecf0;
+  background: #f8f9fc;
 }
 </style>

@@ -64,6 +64,13 @@
                   {{ (row[col.key] as CellData).value }}
                 </span>
 
+                <img
+                  v-else-if="(row[col.key] as CellData).type === 'image'"
+                  :src="(row[col.key] as CellData).src"
+                  :alt="(row[col.key] as CellData).alt || ''"
+                  class="table-thumb"
+                />
+
                 <span v-else :class="(row[col.key] as CellData).class">
                   {{ formatValue((row[col.key] as CellData).value) }}
                 </span>
@@ -155,3 +162,14 @@ function handleAction(cell: CellData, row: TableRow) {
   }
 }
 </script>
+
+<style scoped>
+.table-thumb {
+  display: block;
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  background: #f3f4f6;
+}
+</style>

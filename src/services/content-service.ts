@@ -4,7 +4,9 @@ import type {
   ContentListItem,
   CreateContentPayload,
 } from '@/types/content'
+import { getCmsApiBaseUrl } from '@/config'
 import { getHttpClient } from './http-client'
+import { toRaw } from 'vue'
 
 export interface ContentListParams {
   pageIndex?: number
@@ -18,6 +20,47 @@ export interface ContentListParams {
 function toDisplay(value: string | number | null | undefined): string {
   const s = value == null ? '' : String(value).trim()
   return s === '' ? '-' : s
+}
+
+function toCreateJsonBody(payload: CreateContentPayload) {
+  return {
+    title: payload.title,
+    slug: payload.slug ?? '',
+    keyword: payload.keyword ?? '',
+    description: payload.description ?? '',
+    editor: payload.editor ?? '',
+    categoryId: payload.categoryId,
+  }
+}
+
+function toCreateFormData(payload: CreateContentPayload): FormData {
+  const formData = new FormData()
+  const body = toCreateJsonBody(payload)
+
+  formData.append('title', body.title)
+  if (body.slug) formData.append('slug', body.slug)
+  if (body.keyword) formData.append('keyword', body.keyword)
+  if (body.description) formData.append('description', body.description)
+  if (body.editor) formData.append('editor', body.editor)
+  if (body.categoryId != null) formData.append('categoryId', String(body.categoryId))
+
+  for (const deletedId of payload.deletedThumbnailIds ?? []) {
+    formData.append('deletedThumbnailIds', String(deletedId))
+  }
+  for (const file of payload.files ?? []) {
+    const rawFile = toRaw(file)
+    if (rawFile instanceof File && rawFile.size > 0) {
+      formData.append('thumbnails', rawFile, rawFile.name)
+    }
+  }
+  return formData
+}
+
+export function resolveThumbnailUrl(url?: string | null): string {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url)) return url
+  const base = getCmsApiBaseUrl().replace(/\/$/, '')
+  return base ? `${base}${url}` : url
 }
 
 /** convert raw data to list item */
@@ -36,7 +79,7 @@ function rawToListItem(
     editor: toDisplay(raw.editor),
     slug: toDisplay(raw.slug),
     keyword: toDisplay(raw.keyword),
-    thumbnail: toDisplay(raw.thumbnail),
+    thumbnails: raw.thumbnails ?? [],
     categoryId: raw.categoryId ?? null,
     createdAt: raw.createdAt ?? null,
   }
@@ -104,13 +147,19 @@ export class ContentService {
 
   // create content
   async createContent(payload: CreateContentPayload): Promise<ContentFields> {
-    const { data } = await this.client.post<ResponseBody<ContentFields>>(CONTENTS_CREATE, payload)
+    const { data } = await this.client.post<ResponseBody<ContentFields>>(
+      CONTENTS_CREATE,
+      toCreateFormData(payload),
+    )
     return data.data as ContentFields
   }
 
   // update content
   async updateContent(id: number, payload: CreateContentPayload): Promise<ContentFields> {
-    const { data } = await this.client.put<ResponseBody<ContentFields>>(CONTENTS_UPDATE(id), payload)
+    const { data } = await this.client.put<ResponseBody<ContentFields>>(
+      CONTENTS_UPDATE(id),
+      toCreateFormData(payload),
+    )
     return data.data as ContentFields
   }
 

@@ -1,3 +1,11 @@
+export interface ContentThumbnail {
+  id: number
+  originalFileName: string
+  contentType?: string
+  fileSize: number
+  url: string
+}
+
 export interface ContentFields {
   id?: number
   uuid?: string
@@ -5,7 +13,7 @@ export interface ContentFields {
   keyword?: string
   title: string
   description?: string
-  thumbnail?: string
+  thumbnails?: ContentThumbnail[]
   editor?: string
   deletedYn?: string | null
   createdAt?: string
@@ -14,8 +22,11 @@ export interface ContentFields {
 
 export type CreateContentPayload = Pick<
   ContentFields,
-  'title' | 'slug' | 'keyword' | 'description' | 'thumbnail' | 'editor' | 'categoryId'
->
+  'title' | 'slug' | 'keyword' | 'description' | 'editor' | 'categoryId'
+> & {
+  files?: File[]
+  deletedThumbnailIds?: number[]
+}
 
 /** Content list row (matching API). */
 export interface ContentListItem {
@@ -25,7 +36,7 @@ export interface ContentListItem {
   editor: string
   slug: string
   keyword: string
-  thumbnail: string | null
+  thumbnails: ContentThumbnail[]
   categoryId: number | null
   createdAt: string | null
 }

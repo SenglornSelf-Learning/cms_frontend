@@ -42,7 +42,7 @@ import TableTop from '@/components/common/TableTop.vue'
 import TableList, { type TableColumn, type TableRow } from '@/components/common/TableList.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import ProgressSpinner from '@/components/common/ProgressSpinner.vue'
-import { getContentService } from '@/services'
+import { getContentService, resolveThumbnailUrl } from '@/services'
 import type { ContentListItem } from '@/types/content'
 
 const currentPage = ref(1)
@@ -76,6 +76,7 @@ function handleReset() {
 
 function mapContentToRow(item: ContentListItem, index: number, totalCount: number): TableRow {
   const rowOffset = itemsPerPage.value * (currentPage.value - 1) + index
+  const firstThumbnail = item.thumbnails[0]
   return {
     id: item.id,
     no: totalCount - rowOffset,
@@ -87,7 +88,13 @@ function mapContentToRow(item: ContentListItem, index: number, totalCount: numbe
     },
     keyword: item.keyword,
     editor: item.editor,
-    thumbnail: item.thumbnail ?? '-',
+    thumbnail: firstThumbnail
+      ? {
+          type: 'image',
+          src: resolveThumbnailUrl(firstThumbnail.url),
+          alt: firstThumbnail.originalFileName,
+        }
+      : '-',
     categoryId: item.categoryId ?? '-',
   }
 }

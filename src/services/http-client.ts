@@ -1,4 +1,4 @@
-import axios, { type AxiosError, type AxiosInstance } from 'axios'
+import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios'
 import { getCmsRuntimeConfig } from '@/config'
 
 let httpClientInstance: AxiosInstance | null = null
@@ -16,6 +16,23 @@ function toHttpError(error: unknown): Error {
     err.message ||
     'Request failed'
   return new Error(msg)
+}
+
+function stripJsonContentType(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
+  if (typeof FormData === 'undefined' || !(config.data instanceof FormData) || !config.headers) {
+    return config
+  }
+  const headers = config.headers
+  if (typeof headers.setContentType === 'function') {
+    headers.setContentType(false)
+  }
+  if (typeof headers.delete === 'function') {
+    headers.delete('Content-Type')
+    headers.delete('content-type')
+  }
+  delete (headers as Record<string, unknown>)['Content-Type']
+  delete (headers as Record<string, unknown>)['content-type']
+  return config
 }
 
 /**
@@ -37,6 +54,8 @@ export function createHttpClient(): AxiosInstance {
       'Content-Type': 'application/json',
     },
   })
+
+  client.interceptors.request.use((config) => stripJsonContentType(config))
 
   client.interceptors.response.use(
     (res) => res,
