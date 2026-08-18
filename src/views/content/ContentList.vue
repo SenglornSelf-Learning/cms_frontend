@@ -57,7 +57,6 @@ const columns = computed<TableColumn[]>(() => [
   { key: 'slug', label: 'Slug' },
   { key: 'title', label: 'Title' },
   { key: 'keyword', label: 'Keyword' },
-  { key: 'editor', label: 'Editor' },
   { key: 'thumbnail', label: 'Thumbnail' },
   { key: 'categoryId', label: 'Category', width: '12%' },
 ])
@@ -87,7 +86,6 @@ function mapContentToRow(item: ContentListItem, index: number, totalCount: numbe
       to: { name: 'contentDetail', params: { id: item.id } },
     },
     keyword: item.keyword,
-    editor: item.editor,
     thumbnail: firstThumbnail
       ? {
           type: 'image',

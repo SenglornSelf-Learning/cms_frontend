@@ -24,10 +24,6 @@
           <td>{{ content.title }}</td>
         </tr>
         <tr>
-          <th>Editor</th>
-          <td>{{ content.editor }}</td>
-        </tr>
-        <tr>
           <th>Keyword</th>
           <td>{{ content.keyword }}</td>
         </tr>
@@ -56,6 +52,12 @@
               />
             </div>
             <span v-else>-</span>
+          </td>
+        </tr>
+        <tr>
+          <th>Editor</th>
+          <td>
+            <CKEditorRowsData :html="content.editor" />
           </td>
         </tr>
       </DataRows>
@@ -91,6 +93,7 @@ import MasterContentLayout from '@/components/layout/content-layout/MasterConten
 import DataRows from '@/components/common/DataRows.vue'
 import DeleteModel from '@/components/common/DeleteModel.vue'
 import FormattedNumber from '@/components/common/FormattedNumber.vue'
+import CKEditorRowsData from '@/components/common/CKEditorRowsData.vue'
 import { getContentService, resolveThumbnailUrl } from '@/services/content-service'
 import { getCategoryService } from '@/services/category-service'
 
@@ -169,6 +172,7 @@ async function confirmDelete() {
   } finally {
     isDeleting.value = false
   }
+  
 }
 
 watch(
@@ -181,10 +185,6 @@ watch(
 </script>
 
 <style scoped>
-.content-editor {
-  white-space: pre-wrap;
-  word-break: break-word;
-}
 .thumbnail_gallery {
   display: flex;
   flex-wrap: wrap;

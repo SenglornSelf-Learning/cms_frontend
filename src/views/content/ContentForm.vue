@@ -11,14 +11,6 @@
       />
 
       <FormRows
-        label="Slug"
-        input-id="slug"
-        v-model="form.slug"
-        :error="fieldErrors.slug"
-        @update:modelValue="clearFieldError('slug')"
-      />
-
-      <FormRows
         label="Category"
         required
         type="select"
@@ -31,11 +23,15 @@
       />
 
       <FormRows
+        label="Slug"
+        input-id="slug"
+        v-model="form.slug"
+      />
+
+      <FormRows
         label="Keyword"
         input-id="keyword"
         v-model="form.keyword"
-        :error="fieldErrors.keyword"
-        @update:modelValue="clearFieldError('keyword')"
       />
 
       <FormRows
@@ -44,8 +40,6 @@
         input-id="description"
         :rows="3"
         v-model="form.description"
-        :error="fieldErrors.description"
-        @update:modelValue="clearFieldError('description')"
       />
 
       <FormRows
@@ -64,14 +58,13 @@
       />
 
       <FormRows
-        label="Content"
-        type="textarea"
+        label="Editor"
         input-id="editor"
-        :rows="8"
-        v-model="form.editor"
-        :error="fieldErrors.editor"
-        @update:modelValue="clearFieldError('editor')"
-      />
+      >
+        <CkEditor
+          v-model="form.editor"
+        />
+      </FormRows>
 
       <div class="form_actions">
         <button type="submit" class="btn btn-primary" :disabled="submitting">
@@ -87,6 +80,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MasterContentLayout from '@/components/layout/content-layout/MasterContentLayout.vue'
+import CkEditor from '@/components/common/CkEditor.vue'
 import FormRows, { type FormFileItem, type FormRowOption } from '@/components/common/FormRows.vue'
 import { getCategoryService, getContentService } from '@/services'
 import type { CategoryListItem } from '@/types/category'
@@ -105,7 +99,7 @@ const selectedFiles = ref<File[]>([])
 const existingThumbnails = ref<ContentThumbnail[]>([])
 const deletedThumbnailIds = ref<number[]>([])
 
-type FieldErrors = Partial<Record<'title' | 'slug' | 'keyword' | 'description' | 'thumbnail' | 'editor' | 'categoryId', string>>
+type FieldErrors = Partial<Record<'title' | 'thumbnail' | 'categoryId', string>>
 const fieldErrors = ref<FieldErrors>({})
 
 function clearFieldError(field: keyof FieldErrors) {
@@ -244,12 +238,7 @@ function validateForm(): boolean {
   if (!form.value.categoryId) {
     fieldErrors.value.categoryId = 'Category is required'
     return false
-  }
-  const fileError = validateSelectedFiles(selectedFiles.value)
-  if (fileError) {
-    fieldErrors.value.thumbnail = fileError
-    return false
-  }
+  } 
   return true
 }
 
@@ -317,7 +306,6 @@ async function onSubmit() {
     resetForm()
   } catch (err) {
     console.error('Failed to save content', err)
-    fieldErrors.value.thumbnail = err instanceof Error ? err.message : 'Failed to save content'
   } finally {
     submitting.value = false
   }
