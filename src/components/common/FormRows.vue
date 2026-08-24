@@ -89,7 +89,7 @@
       <input
         v-else
         :id="resolvedId"
-        type="text"
+        :type="type === 'password' ? 'password' : 'text'"
         class="form-control"
         :class="{ 'is-invalid': !!error }"
         :value="stringValue"
@@ -122,7 +122,7 @@ const props = withDefaults(
   defineProps<{
     label: string
     required?: boolean
-    type?: 'text' | 'textarea' | 'select' | 'file'
+    type?: 'text' | 'password' | 'textarea' | 'select' | 'file'
     modelValue?: string | number | null
     options?: FormRowOption[]
     placeholder?: string

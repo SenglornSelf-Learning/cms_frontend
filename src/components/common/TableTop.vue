@@ -71,11 +71,10 @@
         <label v-if="keywordSearchLabel" for="tableTopKeyword" class="mb-1">
           {{ keywordSearchLabel }}
         </label>
-        <div class="d-flex flex-wrap align-items-center">
+        <div class="keyword-search-fields">
           <select
             v-if="showKeywordSearchSelect && keywordSearchOptions.length > 0"
             class="form-control form-control-sm mr-2"
-            style="width: auto; min-width: 8rem"
             :value="keywordSearchValue"
             @change="onKeywordSearchTypeChange"
           >
@@ -92,7 +91,6 @@
             v-model="searchKeyword"
             type="text"
             class="form-control form-control-sm"
-            style="min-width: 10rem"
             :placeholder="searchPlaceholder || 'Search…'"
             @keyup.enter="handleSearch"
           />
@@ -249,3 +247,23 @@ function handleReset() {
   emit('resetFilter')
 }
 </script>
+
+<style scoped>
+.keyword-search-fields {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.keyword-search-fields .form-control {
+  width: auto;
+}
+
+.keyword-search-fields select.form-control {
+  min-width: 8rem;
+}
+
+.keyword-search-fields input.form-control {
+  min-width: 10rem;
+}
+</style>

@@ -30,7 +30,7 @@
           <div class="modal-footer">
             <button
               type="button"
-              class="btn btn-danger btn-pill"
+              class="btn btn-primary btn-pill"
               :disabled="loading"
               @click="emit('close')"
             >
@@ -38,7 +38,7 @@
             </button>
             <button
               type="button"
-              class="btn btn-primary btn-pill"
+              class="btn btn-danger btn-pill"
               :disabled="loading"
               @click="emit('confirm')"
             >

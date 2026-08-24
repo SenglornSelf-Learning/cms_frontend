@@ -2,6 +2,8 @@ export { createHttpClient, getHttpClient } from './http-client'
 export { CategoryService, getCategoryService } from './category-service'
 export { ContentService, getContentService, resolveThumbnailUrl } from './content-service'
 export { DashboardService, dashboardService } from './dashboard-service'
+export { UserService, getUserService } from './user-service'
+export { RoleService, getRoleService } from './role-service'
 
 import { createHttpClient } from './http-client'
 

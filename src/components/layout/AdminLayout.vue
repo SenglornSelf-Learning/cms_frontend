@@ -44,6 +44,7 @@ onUnmounted(() => {
 
         <div data-simplebar style="height: 100%">
           <ul class="nav sidebar-inner" id="sidebar-menu">
+            <!-- Dashboard -->
             <li>
               <RouterLink class="sidenav-item-link" to="/">
                 <i class="mdi mdi-view-dashboard-outline"></i>
@@ -73,6 +74,8 @@ onUnmounted(() => {
                 </div>
               </ul>
             </li>
+
+            <!-- Content Management -->
             <li class="has-sub">
               <a
                 class="sidenav-item-link"
@@ -91,6 +94,31 @@ onUnmounted(() => {
                   <li>
                     <RouterLink class="sidenav-item-link" to="/contents">
                       <span class="nav-text">Content Management</span>
+                    </RouterLink>
+                  </li>
+                </div>
+              </ul>
+            </li>
+
+            <!-- User Management -->
+            <li class="has-sub">
+              <a
+                class="sidenav-item-link"
+                href="javascript:void(0)"
+                data-toggle="collapse"
+                data-target="#user-menu"
+                aria-expanded="false"
+                aria-controls="user-menu"
+              >
+                <i class="mdi mdi-account"></i>
+                <span class="nav-text">User</span>
+                <b class="caret"></b>
+              </a>
+              <ul class="collapse show" id="user-menu" data-parent="#sidebar-menu">
+                <div class="sub-menu">
+                  <li>
+                    <RouterLink class="sidenav-item-link" to="/users">
+                      <span class="nav-text">User Management</span>
                     </RouterLink>
                   </li>
                 </div>

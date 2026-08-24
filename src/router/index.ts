@@ -34,6 +34,8 @@ const router = createRouter({
           name: 'categoryEdit',
           component: () => import('@/views/category/CategoryForm.vue'),
         },
+
+        // Content Management
         {
           path: 'contents',
           name: 'contents',
@@ -54,6 +56,29 @@ const router = createRouter({
           path: 'contents/:id/edit',
           name: 'contentEdit',
           component: () => import('@/views/content/ContentForm.vue'),
+        },
+
+        // User Management
+        {
+          path: 'users',
+          name: 'users',
+          component: () => import('@/views/user/UserList.vue'),
+        },
+        {
+          path: 'users/create',
+          name: 'userCreate',
+          component: () => import('@/views/user/UserForm.vue'),
+        },
+        {
+          path: 'users/detail/:id',
+          name: 'userDetail',
+          component: () => import('@/views/user/UserDetail.vue'),
+          props: true,
+        },
+        {
+          path: 'users/:id/edit',
+          name: 'userEdit',
+          component: () => import('@/views/user/UserForm.vue'),
         },
       ],
     },
