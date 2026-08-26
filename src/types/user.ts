@@ -31,5 +31,13 @@ export interface CreateUserPayload {
   email: string
   phone?: string
   password?: string
-  roles: { roleType: string }[]
+  roles?: { roleType: string }[]
+}
+
+/** Payload for the signed-in account settings form (roles are left unchanged). */
+export interface UpdateAccountPayload {
+  username: string
+  email: string
+  phone?: string
+  password?: string
 }

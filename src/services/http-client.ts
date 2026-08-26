@@ -1,9 +1,21 @@
 import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios'
 import { getCmsRuntimeConfig } from '@/config'
+import { clearStoredCredentials, getStoredCredentials, toBasicAuthHeader } from './auth-credentials'
 
 let httpClientInstance: AxiosInstance | null = null
+let handlingUnauthorized = false
 
-function toHttpError(error: unknown): Error {
+export class HttpError extends Error {
+  readonly status?: number
+
+  constructor(message: string, status?: number) {
+    super(message)
+    this.name = 'HttpError'
+    this.status = status
+  }
+}
+
+function toHttpError(error: unknown): HttpError {
   const err = error as AxiosError<{ message?: string; error?: string }>
   const data = err.response?.data
   const fromBody =
@@ -15,7 +27,7 @@ function toHttpError(error: unknown): Error {
     err.response?.statusText ||
     err.message ||
     'Request failed'
-  return new Error(msg)
+  return new HttpError(msg, err.response?.status)
 }
 
 function stripJsonContentType(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
@@ -33,6 +45,36 @@ function stripJsonContentType(config: InternalAxiosRequestConfig): InternalAxios
   delete (headers as Record<string, unknown>)['Content-Type']
   delete (headers as Record<string, unknown>)['content-type']
   return config
+}
+
+// attach basic auth to the request if the credentials are stored
+function attachBasicAuth(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
+  const creds = getStoredCredentials()
+  if (creds && config.headers && !config.headers.Authorization) {
+    config.headers.Authorization = toBasicAuthHeader(creds.username, creds.password)
+  }
+  return stripJsonContentType(config)
+}
+
+// redirect to login if the request is unauthorized
+async function redirectToLoginOnUnauthorized(error: AxiosError): Promise<void> {
+  if (error.config?.skipAuthRedirect) return
+  if (error.response?.status !== 401) return
+  if (handlingUnauthorized) return
+
+  handlingUnauthorized = true
+  clearStoredCredentials()
+  try {
+    const { default: router } = await import('@/router')
+    const { useAuthStore } = await import('@/stores/auth')
+    useAuthStore().clearSession()
+    if (router.currentRoute.value.name !== 'login') {
+      const redirect = router.currentRoute.value.fullPath
+      await router.push({ name: 'login', query: redirect !== '/' ? { redirect } : undefined })
+    }
+  } finally {
+    handlingUnauthorized = false
+  }
 }
 
 /**
@@ -55,11 +97,16 @@ export function createHttpClient(): AxiosInstance {
     },
   })
 
-  client.interceptors.request.use((config) => stripJsonContentType(config))
+  client.interceptors.request.use((config) => attachBasicAuth(config))
 
   client.interceptors.response.use(
     (res) => res,
-    (error) => Promise.reject(toHttpError(error)),
+    async (error) => {
+      if (axios.isAxiosError(error)) {
+        await redirectToLoginOnUnauthorized(error)
+      }
+      return Promise.reject(toHttpError(error))
+    },
   )
 
   httpClientInstance = client

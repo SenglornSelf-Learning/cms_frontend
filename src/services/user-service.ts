@@ -1,5 +1,5 @@
 import type { PageResponse, ResponseBody } from '@/types/cms-api'
-import type { CreateUserPayload, UserFields, UserListItem } from '@/types/user'
+import type { CreateUserPayload, UpdateAccountPayload, UserFields, UserListItem } from '@/types/user'
 import { getHttpClient } from './http-client'
 
 export interface UserListParams {
@@ -44,6 +44,7 @@ function rawToListItem(
 }
 
 const USERS_LIST = '/api/users/list'
+const USER_ACCOUNT = '/api/users/account'
 const USER_DETAIL = (id: number) => `/api/users/${id}`
 const USERS_CREATE = '/api/users'
 const USER_UPDATE = (id: number) => `/api/users/update/${id}`
@@ -99,6 +100,14 @@ export class UserService {
     }
   }
 
+  // get signed-in account
+  async getAccount(options?: { skipAuthRedirect?: boolean }): Promise<UserFields> {
+    const { data } = await this.client.get<ResponseBody<UserFields>>(USER_ACCOUNT, {
+      skipAuthRedirect: options?.skipAuthRedirect,
+    })
+    return data.data as UserFields
+  }
+
   // get user by id
   async getUserById(id: number): Promise<UserFields> {
     const { data } = await this.client.get<ResponseBody<UserFields>>(USER_DETAIL(id))
@@ -112,7 +121,7 @@ export class UserService {
   }
 
   // update user
-  async updateUserById(id: number, payload: CreateUserPayload): Promise<UserFields> {
+  async updateUserById(id: number, payload: CreateUserPayload | UpdateAccountPayload): Promise<UserFields> {
     const { data } = await this.client.put<ResponseBody<UserFields>>(USER_UPDATE(id), payload)
     return data.data as UserFields
   }

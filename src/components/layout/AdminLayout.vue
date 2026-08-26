@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { CMS } from '@/constants/cms'
-import { useCmsConfigStore } from '@/stores'
+import { useCmsConfigStore } from '@/stores/cms-config'
 import { initSleekSidebar } from '@/theme/use-sleek-sidebar'
+import UserAccountMenu from '@/components/layout/UserAccountMenu.vue'
 
 const cmsConfig = useCmsConfigStore()
 const { apiBaseUrl } = storeToRefs(cmsConfig)
@@ -24,7 +24,7 @@ onUnmounted(() => {
     <aside class="left-sidebar bg-sidebar">
       <div id="sidebar" class="sidebar sidebar-with-footer">
         <div class="app-brand">
-          <RouterLink to="/" class="brand-link" :title="CMS.APP_TITLE">
+          <RouterLink to="/" class="brand-link" title="Content Management System">
             <svg
               class="brand-icon"
               xmlns="http://www.w3.org/2000/svg"
@@ -38,7 +38,7 @@ onUnmounted(() => {
                 <path class="logo-fill-white" fill="#FFF" d="M11 4v25l8 4V0z" />
               </g>
             </svg>
-            <span class="brand-name text-truncate">{{ CMS.APP_TITLE }}</span>
+            <span class="brand-name text-truncate">Content Management System</span>
           </RouterLink>
         </div>
 
@@ -158,6 +158,9 @@ onUnmounted(() => {
               />
             </div>
           </div>
+
+          <!-- User Account Menu -->
+          <UserAccountMenu />
         </nav>
       </header>
 

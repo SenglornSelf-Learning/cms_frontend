@@ -1,9 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import { getStoredCredentials } from '@/services/auth-credentials'
+import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/auth/LoginView.vue'),
+      meta: { public: true },
+    },
     {
       path: '/',
       component: AdminLayout,
@@ -13,6 +21,8 @@ const router = createRouter({
           name: 'dashboard',
           component: () => import('@/views/dashboard/DashboardView.vue'),
         },
+
+        // category 
         {
           path: 'categories',
           name: 'categories',
@@ -80,13 +90,43 @@ const router = createRouter({
           name: 'userEdit',
           component: () => import('@/views/user/UserForm.vue'),
         },
+        {
+          path: 'profile',
+          name: 'userProfile',
+          component: () => import('@/views/user/UserProfile.vue'),
+        },
       ],
     },
   ],
 })
 
-router.beforeEach(() => {
+router.beforeEach(async (to) => {
   window.NProgress?.start()
+
+  const auth = useAuthStore()
+  console.log('auth.currentUser', auth.currentUser)
+  console.log('getStoredCredentials', getStoredCredentials())
+  
+  if (!auth.currentUser && getStoredCredentials()) {
+    await auth.restoreSession()
+  }
+
+  const isPublic = to.matched.some((record) => record.meta.public === true)
+  if (isPublic) {
+    if (auth.currentUser && to.name === 'login') {
+      return { name: 'dashboard' }
+    }
+    return true
+  }
+
+  if (!auth.currentUser) {
+    return {
+      name: 'login',
+      query: to.fullPath !== '/' ? { redirect: to.fullPath } : undefined,
+    }
+  }
+
+  return true
 })
 
 router.afterEach(() => {

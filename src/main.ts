@@ -14,11 +14,16 @@ async function bootstrap() {
   await loadThemeScripts()
 
   const app = createApp(App)
+  const pinia = createPinia()
 
-  app.use(createPinia())
-  app.use(router)
+  app.use(pinia)
 
   initializeServices()
+
+  const { useAuthStore } = await import('@/stores/auth')
+  await useAuthStore().restoreSession()
+
+  app.use(router)
 
   app.mount('#app')
 }
