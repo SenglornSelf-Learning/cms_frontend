@@ -8,6 +8,10 @@ const router = createRouter({
   routes: [
     {
       path: '/login',
+      redirect: { name: 'login' },
+    },
+    {
+      path: '/account/login',
       name: 'login',
       component: () => import('@/views/auth/LoginView.vue'),
       meta: { public: true },
@@ -91,7 +95,7 @@ const router = createRouter({
           component: () => import('@/views/user/UserForm.vue'),
         },
         {
-          path: 'profile',
+          path: 'account/profile',
           name: 'userProfile',
           component: () => import('@/views/user/UserProfile.vue'),
         },
@@ -104,8 +108,6 @@ router.beforeEach(async (to) => {
   window.NProgress?.start()
 
   const auth = useAuthStore()
-  console.log('auth.currentUser', auth.currentUser)
-  console.log('getStoredCredentials', getStoredCredentials())
   
   if (!auth.currentUser && getStoredCredentials()) {
     await auth.restoreSession()

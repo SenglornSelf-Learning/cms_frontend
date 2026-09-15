@@ -1,6 +1,7 @@
 const THEME_SCRIPT_PATHS = [
   '/theme/assets/plugins/nprogress/nprogress.js',
   '/theme/assets/plugins/jquery/jquery.min.js',
+  '/theme/assets/plugins/toastr/toastr.min.js',
   '/theme/assets/plugins/bootstrap/js/bootstrap.bundle.min.js',
   '/theme/assets/plugins/simplebar/simplebar.min.js',
   '/theme/assets/js/sleek.js',

@@ -3,10 +3,10 @@
 </template>
 
 <script lang="ts">
-/** ISO-like `2026-08-13T15:10:12.44818` → `2026-08-13 15:10:12` */
+/** ISO-like `2026-08-13T15:10:12.44818` → `2026-08-13 15:10` */
 export function formatDateTime(value: string | number | null | undefined): string {
   if (value == null || value === '') return ''
-  return String(value).replace('T', ' ').slice(0, 19)
+  return String(value).replace('T', ' ').slice(0, 16)
 }
 </script>
 

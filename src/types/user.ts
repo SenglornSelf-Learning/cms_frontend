@@ -40,4 +40,5 @@ export interface UpdateAccountPayload {
   email: string
   phone?: string
   password?: string
+  oldPassword?: string
 }
