@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 
 import '@sleek-theme/assets/plugins/simplebar/simplebar.css'
 import '@sleek-theme/assets/plugins/nprogress/nprogress.css'
+import '@sleek-theme/assets/plugins/toastr/toastr.min.css'
 import '@sleek-theme/assets/css/sleek.css'
 
 import App from './App.vue'
